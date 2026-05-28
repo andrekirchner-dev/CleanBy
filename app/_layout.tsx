@@ -1,16 +1,22 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { supabase } from '../src/lib/supabase';
+import { supabase, isSupabaseConfigured } from '../src/lib/supabase';
 import { useAuthStore } from '../src/stores/authStore';
 
 export default function RootLayout() {
   const setSession = useAuthStore((s) => s.setSession);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
+    if (!isSupabaseConfigured) {
+      // Sem credenciais: vai direto para onboarding sem travar
+      setSession(null);
+      return;
+    }
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => setSession(session))
+      .catch(() => setSession(null));
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
