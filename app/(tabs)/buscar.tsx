@@ -1,35 +1,31 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, Search, X } from 'lucide-react-native';
 import { COLORS } from '../../src/lib/constants';
 import { EstablishmentCard } from '../../src/components/home/EstablishmentCard';
-import type { Establishment } from '../../src/types';
-
-const MOCK: Establishment[] = [
-  { id: '1', name: 'AutoSpa Premium', slug: 'autospa-premium', rating: 4.8, review_count: 124, address: 'Rua das Flores, 123', latitude: -23.55, longitude: -46.63, distance_km: 0.8, is_open: true, opening_hours: {}, has_mobile_service: true, categories: ['lavagem_simples', 'polimento'], cover_url: undefined, logo_url: undefined },
-  { id: '2', name: 'LavaCar Express', slug: 'lavacar-express', rating: 4.5, review_count: 89, address: 'Av. Paulista, 456', latitude: -23.56, longitude: -46.64, distance_km: 1.2, is_open: true, opening_hours: {}, has_mobile_service: false, categories: ['lavagem_simples', 'higienizacao_interna'], cover_url: undefined, logo_url: undefined },
-  { id: '3', name: 'Shine & Clean', slug: 'shine-clean', rating: 4.9, review_count: 201, address: 'Rua Augusta, 789', latitude: -23.54, longitude: -46.65, distance_km: 2.1, is_open: false, opening_hours: {}, has_mobile_service: true, categories: ['estetica_completa', 'cristalizacao'], cover_url: undefined, logo_url: undefined },
-  { id: '4', name: 'Cristal Auto', slug: 'cristal-auto', rating: 4.3, review_count: 56, address: 'Al. Santos, 321', latitude: -23.57, longitude: -46.66, distance_km: 3.0, is_open: true, opening_hours: {}, has_mobile_service: false, categories: ['cristalizacao', 'blindagem_pintura'], cover_url: undefined, logo_url: undefined },
-];
+import { useEstablishmentStore } from '../../src/stores/establishmentStore';
 
 type SortOption = 'relevancia' | 'distancia' | 'avaliacao';
 
 const SORT_OPTS: { key: SortOption; label: string }[] = [
   { key: 'relevancia', label: 'Relevância' },
-  { key: 'distancia',  label: 'Mais próximo' },
-  { key: 'avaliacao',  label: 'Melhor avaliado' },
+  { key: 'distancia', label: 'Mais próximo' },
+  { key: 'avaliacao', label: 'Melhor avaliado' },
 ];
 
 export default function BuscarScreen() {
   const router = useRouter();
+  const { establishments, loading, fetch } = useEstablishmentStore();
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('relevancia');
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [onlyMobile, setOnlyMobile] = useState(false);
 
-  const filtered = MOCK.filter((e) => {
+  useEffect(() => { if (establishments.length === 0) fetch(); }, []);
+
+  const filtered = establishments.filter((e) => {
     if (onlyOpen && !e.is_open) return false;
     if (onlyMobile && !e.has_mobile_service) return false;
     if (query) {
@@ -117,30 +113,36 @@ export default function BuscarScreen() {
         <View style={{ height: 1, backgroundColor: COLORS.border, marginHorizontal: 20 }} />
 
         {/* Results */}
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 20, gap: 14 }}
-          ListHeaderComponent={
-            <Text style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4 }}>
-              {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
-            </Text>
-          }
-          ListEmptyComponent={
-            <View style={{ alignItems: 'center', marginTop: 60, gap: 16 }}>
-              <View style={{
-                width: 80, height: 80, borderRadius: 40,
-                backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
-                alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Search size={36} color="rgba(255,255,255,0.2)" strokeWidth={1.5} />
+        {loading ? (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator color={COLORS.chuva} />
+          </View>
+        ) : (
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ padding: 20, gap: 14 }}
+            ListHeaderComponent={
+              <Text style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4 }}>
+                {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
+              </Text>
+            }
+            ListEmptyComponent={
+              <View style={{ alignItems: 'center', marginTop: 60, gap: 16 }}>
+                <View style={{
+                  width: 80, height: 80, borderRadius: 40,
+                  backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
+                  alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Search size={36} color="rgba(255,255,255,0.2)" strokeWidth={1.5} />
+                </View>
+                <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 15 }}>Nenhum resultado encontrado</Text>
               </View>
-              <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 15 }}>Nenhum resultado encontrado</Text>
-            </View>
-          }
-          renderItem={({ item }) => <EstablishmentCard establishment={item} />}
-          showsVerticalScrollIndicator={false}
-        />
+            }
+            renderItem={({ item }) => <EstablishmentCard establishment={item} />}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </SafeAreaView>
     </View>
   );

@@ -1,47 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Pencil, Car, CreditCard, MapPin, Bell, Shield, HelpCircle, FileText, LogOut, ChevronRight } from 'lucide-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
+import { useVehicleStore } from '../../src/stores/vehicleStore';
 import { COLORS } from '../../src/lib/constants';
 import { LoyaltyCard } from '../../src/components/ui/LoyaltyCard';
 import { ProModal } from '../../src/components/ui/ProModal';
 import { Badge } from '../../src/components/ui/Badge';
 
-const MENU_SECTIONS = [
-  {
-    title: 'Conta',
-    items: [
-      { Icon: Car,         label: 'Meus veículos',       sub: '2 veículos' },
-      { Icon: CreditCard,  label: 'Formas de pagamento',  sub: 'Cartão, Pix' },
-      { Icon: MapPin,      label: 'Endereços salvos',     sub: '1 endereço' },
-    ],
-  },
-  {
-    title: 'Preferências',
-    items: [
-      { Icon: Bell,   label: 'Notificações',        sub: 'Ativadas' },
-      { Icon: Shield, label: 'Privacidade e segurança', sub: '' },
-    ],
-  },
-  {
-    title: 'Suporte',
-    items: [
-      { Icon: HelpCircle, label: 'Central de ajuda', sub: '' },
-      { Icon: FileText,   label: 'Termos de uso',    sub: '' },
-    ],
-  },
-];
-
 export default function PerfilScreen() {
   const router = useRouter();
   const { user, signOut } = useAuthStore();
+  const { vehicles, fetch: fetchVehicles } = useVehicleStore();
   const [showProModal, setShowProModal] = useState(false);
   const isPro = user?.plan === 'pro';
-  const stamps = user?.loyalty_stamps ?? 3;
+  const stamps = user?.loyalty_stamps ?? 0;
   const initials = user?.name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() ?? 'U';
+
+  useEffect(() => { if (user) fetchVehicles(user.id); }, [user?.id]);
+
+  const MENU_SECTIONS = [
+    {
+      title: 'Conta',
+      items: [
+        { Icon: Car,        label: 'Meus veículos',          sub: `${vehicles.length} veículo${vehicles.length !== 1 ? 's' : ''}` },
+        { Icon: CreditCard, label: 'Formas de pagamento',    sub: 'Cartão, Pix' },
+        { Icon: MapPin,     label: 'Endereços salvos',       sub: '1 endereço' },
+      ],
+    },
+    {
+      title: 'Preferências',
+      items: [
+        { Icon: Bell,   label: 'Notificações',            sub: 'Ativadas' },
+        { Icon: Shield, label: 'Privacidade e segurança', sub: '' },
+      ],
+    },
+    {
+      title: 'Suporte',
+      items: [
+        { Icon: HelpCircle, label: 'Central de ajuda', sub: '' },
+        { Icon: FileText,   label: 'Termos de uso',    sub: '' },
+      ],
+    },
+  ];
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.noite }}>
@@ -110,8 +114,8 @@ export default function PerfilScreen() {
             }}>
               {[
                 { value: `${stamps}`, label: 'Selos' },
-                { value: '2', label: 'Veículos' },
-                { value: '3', label: 'Serviços' },
+                { value: `${vehicles.length}`, label: 'Veículos' },
+                { value: '—', label: 'Serviços' },
               ].map((stat, i) => (
                 <View key={i} style={{ flex: 1, alignItems: 'center', borderRightWidth: i < 2 ? 1 : 0, borderRightColor: 'rgba(255,255,255,0.07)' }}>
                   <Text style={{ color: COLORS.white, fontSize: 22, fontWeight: '800', letterSpacing: -0.5 }}>{stat.value}</Text>

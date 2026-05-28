@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function isOwner(userId) { return isAuth() && uid() == userId; }
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function isPartner() { return isAuth() && userRole() == 'parceiro'; }
+
+    // ── Users ──────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+    }
+
+    // ── Vehicles ───────────────────────────────────────────
+    match /vehicles/{vehicleId} {
+      allow read: if isAuth() && resource.data.user_id == uid();
+      allow create: if isAuth() && request.resource.data.user_id == uid();
+      allow update, delete: if isAuth() && resource.data.user_id == uid();
+    }
+
+    // ── Establishments ─────────────────────────────────────
+    match /establishments/{estId} {
+      allow read: if true;
+      allow create: if isPartner() && request.resource.data.partner_id == uid();
+      allow update, delete: if isAuth() && resource.data.partner_id == uid();
+    }
+
+    // ── Services ───────────────────────────────────────────
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAuth() && (
+        isPartner() &&
+        get(/databases/$(database)/documents/establishments/$(request.resource.data.establishment_id)).data.partner_id == uid()
+      );
+      allow delete: if isAuth() && (
+        get(/databases/$(database)/documents/establishments/$(resource.data.establishment_id)).data.partner_id == uid()
+      );
+    }
+
+    // ── Bookings ───────────────────────────────────────────
+    match /bookings/{bookingId} {
+      allow read: if isAuth() && (
+        resource.data.user_id == uid() ||
+        get(/databases/$(database)/documents/establishments/$(resource.data.establishment_id)).data.partner_id == uid()
+      );
+      allow create: if isAuth() && request.resource.data.user_id == uid();
+      allow update: if isAuth() && (
+        resource.data.user_id == uid() ||
+        get(/databases/$(database)/documents/establishments/$(resource.data.establishment_id)).data.partner_id == uid()
+      );
+    }
+
+    // ── Reviews ────────────────────────────────────────────
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuth() && request.resource.data.user_id == uid();
+    }
+
+    // ── Products ───────────────────────────────────────────
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if false; // admin only via console
+    }
+  }
+}

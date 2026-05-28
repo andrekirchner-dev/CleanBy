@@ -7,13 +7,8 @@ import L from 'leaflet';
 import { Navigation, X, ChevronRight } from 'lucide-react-native';
 import { COLORS } from '../../src/lib/constants';
 import { StarRating } from '../../src/components/ui/StarRating';
+import { useEstablishmentStore } from '../../src/stores/establishmentStore';
 import type { Establishment } from '../../src/types';
-
-const MOCK: Establishment[] = [
-  { id: '1', name: 'AutoSpa Premium', slug: 'autospa-premium', rating: 4.8, review_count: 124, address: 'Rua das Flores, 123', latitude: -23.550, longitude: -46.633, distance_km: 0.8, is_open: true, opening_hours: {}, has_mobile_service: true, categories: ['lavagem_simples'], cover_url: undefined, logo_url: undefined },
-  { id: '2', name: 'LavaCar Express', slug: 'lavacar-express', rating: 4.5, review_count: 89, address: 'Av. Paulista, 456', latitude: -23.562, longitude: -46.644, distance_km: 1.2, is_open: true, opening_hours: {}, has_mobile_service: false, categories: ['lavagem_completa'], cover_url: undefined, logo_url: undefined },
-  { id: '3', name: 'Shine & Clean', slug: 'shine-clean', rating: 4.9, review_count: 201, address: 'Rua Augusta, 789', latitude: -23.541, longitude: -46.651, distance_km: 2.1, is_open: false, opening_hours: {}, has_mobile_service: true, categories: ['estetica_completa'], cover_url: undefined, logo_url: undefined },
-];
 
 function createMarkerIcon(isSelected: boolean, isOpen: boolean) {
   const bg = isSelected ? '#1A7AC8' : isOpen ? '#00C9A0' : '#E24B4A';
@@ -33,9 +28,12 @@ function MapClickHandler({ onDeselect }: { onDeselect: () => void }) {
 
 export default function MapaWebScreen() {
   const router = useRouter();
+  const { establishments, fetch } = useEstablishmentStore();
   const [selected, setSelected] = useState<Establishment | null>(null);
   const [onlyMobile, setOnlyMobile] = useState(false);
   const [ready, setReady] = useState(false);
+
+  useEffect(() => { if (establishments.length === 0) fetch(); }, []);
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -54,7 +52,7 @@ export default function MapaWebScreen() {
     };
   }, []);
 
-  const filtered = onlyMobile ? MOCK.filter((e) => e.has_mobile_service) : MOCK;
+  const filtered = onlyMobile ? establishments.filter((e) => e.has_mobile_service) : establishments;
   const handleDeselect = useCallback(() => setSelected(null), []);
 
   return (

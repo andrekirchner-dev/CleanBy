@@ -1,4 +1,5 @@
 export type Plan = 'free' | 'pro';
+export type UserRole = 'cliente' | 'parceiro' | 'admin';
 
 export type BookingStatus =
   | 'aguardando_confirmacao'
@@ -24,6 +25,7 @@ export interface User {
   phone?: string;
   avatar_url?: string;
   plan: Plan;
+  role: UserRole;
   pro_pay_on_site_quota: number;
   loyalty_stamps: number;
   created_at: string;
@@ -89,6 +91,11 @@ export interface Booking {
   payment_type: 'reserva' | 'completo' | 'no_local';
   amount_paid: number;
   total_amount: number;
+  // Denormalized for efficient list rendering
+  service_name: string;
+  establishment_name: string;
+  vehicle_model: string;
+  vehicle_plate: string;
   service?: Service;
   establishment?: Establishment;
   vehicle?: Vehicle;
