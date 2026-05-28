@@ -72,35 +72,49 @@ export default function RootLayout() {
   const setFirebaseUser = useAuthStore((s) => s.setFirebaseUser);
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
+    let mounted = true;
+    let unsubscribeAuth: (() => void) | null = null;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
 
-    // Processa resultado do Google redirect (web) antes de iniciar o timeout
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          clearTimeout(timeout);
+    const init = async () => {
+      // Verifica redirect pendente (Google OAuth com redirect) antes de tudo.
+      // Isso evita a race condition onde onAuthStateChanged dispara null
+      // antes de getRedirectResult processar o usuário recém-logado.
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user && mounted) {
           setFirebaseUser(result.user);
         }
-      })
-      .catch(() => null);
+      } catch (_) {}
 
-    timeout = setTimeout(() => setFirebaseUser(null), 6000);
+      if (!mounted) return;
 
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => {
-        clearTimeout(timeout);
-        setFirebaseUser(user);
-      },
-      () => {
-        clearTimeout(timeout);
-        setFirebaseUser(null);
-      }
-    );
+      // Após checar o redirect, configura o listener normal com timeout de segurança
+      timeout = setTimeout(() => {
+        if (mounted) setFirebaseUser(null);
+      }, 5000);
+
+      unsubscribeAuth = onAuthStateChanged(
+        auth,
+        (user) => {
+          if (!mounted) return;
+          if (timeout) clearTimeout(timeout);
+          setFirebaseUser(user);
+        },
+        () => {
+          if (!mounted) return;
+          if (timeout) clearTimeout(timeout);
+          setFirebaseUser(null);
+        }
+      );
+    };
+
+    init();
 
     return () => {
-      clearTimeout(timeout);
-      unsubscribe();
+      mounted = false;
+      if (timeout) clearTimeout(timeout);
+      if (unsubscribeAuth) unsubscribeAuth();
     };
   }, []);
 

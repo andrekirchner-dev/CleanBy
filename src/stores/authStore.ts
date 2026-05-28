@@ -5,6 +5,7 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
   GoogleAuthProvider,
+  signInWithPopup,
   signInWithRedirect,
   type User as FirebaseUser,
 } from 'firebase/auth';
@@ -77,18 +78,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   signInWithGoogle: async () => {
     set({ googleLoading: true });
     try {
-      // signInWithRedirect funciona em web e native sem bloqueio de popup
-      await signInWithRedirect(auth, googleProvider);
-      // Após o redirect o browser navega para o Google — o código abaixo
-      // só executa se houver erro imediato antes do redirect
+      if (Platform.OS === 'web') {
+        // Popup não recarrega a página — evita race condition com onAuthStateChanged
+        await signInWithPopup(auth, googleProvider);
+      } else {
+        await signInWithRedirect(auth, googleProvider);
+      }
       return {};
     } catch (e: any) {
-      set({ googleLoading: false });
       const msg: Record<string, string> = {
-        'auth/account-exists-with-different-credential': 'Já existe uma conta com este e-mail.',
+        'auth/popup-closed-by-user': 'Login cancelado.',
+        'auth/popup-blocked': 'Popup bloqueado. Permita popups para este site e tente novamente.',
         'auth/cancelled-popup-request': 'Login cancelado.',
+        'auth/account-exists-with-different-credential': 'Já existe uma conta com este e-mail.',
       };
-      return { error: msg[e.code] ?? 'Erro ao entrar com Google. Tente novamente.' };
+      return { error: msg[e.code] ?? `Erro ao entrar com Google. (${e.code ?? 'unknown'})` };
+    } finally {
+      set({ googleLoading: false });
     }
   },
 
