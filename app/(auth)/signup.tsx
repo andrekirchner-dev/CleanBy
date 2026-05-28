@@ -7,10 +7,11 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { COLORS } from '../../src/lib/constants';
 import { Button } from '../../src/components/ui/Button';
+import { GoogleButton } from '../../src/components/ui/GoogleButton';
 
 export default function SignupScreen() {
   const router = useRouter();
-  const signUp = useAuthStore((s) => s.signUp);
+  const { signUp, signInWithGoogle, googleLoading } = useAuthStore();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,11 +32,15 @@ export default function SignupScreen() {
     }
   };
 
-  const fields = [
-    { label: 'Nome completo', value: name, onChange: setName, placeholder: 'Seu nome', type: 'default' as const },
-    { label: 'E-mail', value: email, onChange: setEmail, placeholder: 'seu@email.com', type: 'email-address' as const },
-    { label: 'Senha', value: password, onChange: setPassword, placeholder: '••••••••', type: 'default' as const, secure: true },
-  ];
+  const handleGoogle = async () => {
+    setError('');
+    const result = await signInWithGoogle();
+    if (result?.error) {
+      setError(result.error);
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.noite }}>
@@ -48,9 +53,19 @@ export default function SignupScreen() {
           <Text style={{ fontSize: 28, fontWeight: '800', color: COLORS.white, marginBottom: 8 }}>
             Criar conta
           </Text>
-          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, marginBottom: 40 }}>
+          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, marginBottom: 32 }}>
             Junte-se ao CleanBy gratuitamente
           </Text>
+
+          {/* Google OAuth */}
+          <GoogleButton onPress={handleGoogle} loading={googleLoading} label="Cadastrar com Google" />
+
+          {/* Divider */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 24 }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.12)' }} />
+            <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>ou cadastre com e-mail</Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.12)' }} />
+          </View>
 
           {error ? (
             <View style={{ backgroundColor: '#FEE2E2', borderRadius: 10, padding: 12, marginBottom: 16 }}>
@@ -59,7 +74,11 @@ export default function SignupScreen() {
           ) : null}
 
           <View style={{ gap: 16 }}>
-            {fields.map((f) => (
+            {[
+              { label: 'Nome completo', value: name, onChange: setName, placeholder: 'Seu nome', keyboard: 'default' as const, capitalize: 'words' as const },
+              { label: 'E-mail', value: email, onChange: setEmail, placeholder: 'seu@email.com', keyboard: 'email-address' as const, capitalize: 'none' as const },
+              { label: 'Senha', value: password, onChange: setPassword, placeholder: '••••••••', keyboard: 'default' as const, capitalize: 'none' as const, secure: true },
+            ].map((f) => (
               <View key={f.label}>
                 <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 6 }}>{f.label}</Text>
                 <TextInput
@@ -67,8 +86,8 @@ export default function SignupScreen() {
                   onChangeText={f.onChange}
                   placeholder={f.placeholder}
                   placeholderTextColor="rgba(255,255,255,0.3)"
-                  keyboardType={f.type}
-                  autoCapitalize={f.type === 'email-address' ? 'none' : 'words'}
+                  keyboardType={f.keyboard}
+                  autoCapitalize={f.capitalize}
                   secureTextEntry={f.secure}
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -85,7 +104,7 @@ export default function SignupScreen() {
             Ao criar conta, você concorda com nossos Termos de Uso e Política de Privacidade.
           </Text>
 
-          <View style={{ marginTop: 32 }}>
+          <View style={{ marginTop: 28 }}>
             <Button label="Criar minha conta" onPress={handleSignup} loading={loading} fullWidth size="lg" />
           </View>
 

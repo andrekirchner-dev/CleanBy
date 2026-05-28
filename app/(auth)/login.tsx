@@ -7,10 +7,11 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { COLORS } from '../../src/lib/constants';
 import { Button } from '../../src/components/ui/Button';
+import { GoogleButton } from '../../src/components/ui/GoogleButton';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const signIn = useAuthStore((s) => s.signIn);
+  const { signIn, signInWithGoogle, googleLoading } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,17 @@ export default function LoginScreen() {
     const result = await signIn(email, password);
     setLoading(false);
     if (result.error) {
-      setError('E-mail ou senha incorretos');
+      setError(result.error);
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
+
+  const handleGoogle = async () => {
+    setError('');
+    const result = await signInWithGoogle();
+    if (result?.error) {
+      setError(result.error);
     } else {
       router.replace('/(tabs)');
     }
@@ -40,9 +51,19 @@ export default function LoginScreen() {
           <Text style={{ fontSize: 28, fontWeight: '800', color: COLORS.white, marginBottom: 8 }}>
             Bem-vindo de volta
           </Text>
-          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, marginBottom: 40 }}>
+          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, marginBottom: 32 }}>
             Entre na sua conta CleanBy
           </Text>
+
+          {/* Google OAuth */}
+          <GoogleButton onPress={handleGoogle} loading={googleLoading} />
+
+          {/* Divider */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 24 }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.12)' }} />
+            <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>ou entre com e-mail</Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.12)' }} />
+          </View>
 
           {error ? (
             <View style={{ backgroundColor: '#FEE2E2', borderRadius: 10, padding: 12, marginBottom: 16 }}>
@@ -90,7 +111,7 @@ export default function LoginScreen() {
             <Text style={{ color: COLORS.chuva, fontSize: 14 }}>Esqueci minha senha</Text>
           </TouchableOpacity>
 
-          <View style={{ marginTop: 32 }}>
+          <View style={{ marginTop: 28 }}>
             <Button label="Entrar" onPress={handleLogin} loading={loading} fullWidth size="lg" />
           </View>
 
