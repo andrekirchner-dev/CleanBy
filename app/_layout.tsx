@@ -9,10 +9,28 @@ export default function RootLayout() {
   const setFirebaseUser = useAuthStore((s) => s.setFirebaseUser);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setFirebaseUser(user);
-    });
-    return unsubscribe;
+    // Timeout de segurança: se Firebase Auth não responder em 4s vai para onboarding
+    const timeout = setTimeout(() => {
+      setFirebaseUser(null);
+    }, 4000);
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        clearTimeout(timeout);
+        setFirebaseUser(user);
+      },
+      (error) => {
+        // Auth não configurado ou sem internet — vai para onboarding
+        clearTimeout(timeout);
+        setFirebaseUser(null);
+      }
+    );
+
+    return () => {
+      clearTimeout(timeout);
+      unsubscribe();
+    };
   }, []);
 
   return (
