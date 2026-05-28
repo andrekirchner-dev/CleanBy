@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Car } from 'lucide-react-native';
 import { COLORS } from '../../lib/constants';
 import { Badge } from '../ui/Badge';
 import { StarRating } from '../ui/StarRating';
@@ -36,7 +37,7 @@ export function EstablishmentCard({ establishment, style }: EstablishmentCardPro
           />
         ) : (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 48 }}>🚗</Text>
+            <Car size={48} color={COLORS.chuva} strokeWidth={1} />
           </View>
         )}
         <View style={{ position: 'absolute', top: 12, right: 12 }}>

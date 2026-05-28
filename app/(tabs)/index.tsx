@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { ShoppingBag, Bell, ChevronDown, Search, Gift } from 'lucide-react-native';
 import { COLORS } from '../../src/lib/constants';
 import { EstablishmentCard } from '../../src/components/home/EstablishmentCard';
 import { CategoryScroll } from '../../src/components/home/CategoryScroll';
@@ -62,7 +63,7 @@ export default function HomeScreen() {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
             <View>
               <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, marginBottom: 4 }}>
-                Olá, {firstName} 👋
+                Olá, {firstName}
               </Text>
               <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Text style={{ color: COLORS.white, fontWeight: '800', fontSize: 18, letterSpacing: -0.3 }}>
@@ -72,7 +73,7 @@ export default function HomeScreen() {
                   backgroundColor: `${COLORS.chuva}20`,
                   borderRadius: 100, paddingHorizontal: 6, paddingVertical: 2,
                 }}>
-                  <Text style={{ color: COLORS.chuva, fontSize: 10, fontWeight: '700' }}>▼</Text>
+                  <ChevronDown size={12} color={COLORS.chuva} strokeWidth={2.5} />
                 </View>
               </TouchableOpacity>
             </View>
@@ -84,7 +85,7 @@ export default function HomeScreen() {
                   backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
                   alignItems: 'center', justifyContent: 'center',
                 }}>
-                <Text style={{ fontSize: 18 }}>🛒</Text>
+                <ShoppingBag size={18} color="rgba(255,255,255,0.65)" strokeWidth={1.8} />
               </TouchableOpacity>
               <TouchableOpacity style={{
                 width: 42, height: 42, borderRadius: 21,
@@ -97,7 +98,7 @@ export default function HomeScreen() {
                   backgroundColor: COLORS.verdeAgua,
                   borderWidth: 2, borderColor: COLORS.noite,
                 }} />
-                <Text style={{ fontSize: 18 }}>🔔</Text>
+                <Bell size={18} color="rgba(255,255,255,0.65)" strokeWidth={1.8} />
               </TouchableOpacity>
             </View>
           </View>
@@ -112,7 +113,7 @@ export default function HomeScreen() {
               borderWidth: 1, borderColor: COLORS.border,
             }}
           >
-            <Text style={{ fontSize: 15, opacity: 0.6 }}>🔍</Text>
+            <Search size={15} color="rgba(255,255,255,0.3)" strokeWidth={2} />
             <Text style={{ color: 'rgba(255,255,255,0.25)', fontSize: 15, flex: 1 }}>
               Buscar serviço ou estabelecimento...
             </Text>
@@ -167,9 +168,11 @@ export default function HomeScreen() {
                 <View style={{ flex: 1 }}>
                   <View style={{
                     backgroundColor: 'rgba(255,255,255,0.15)', alignSelf: 'flex-start',
-                    borderRadius: 100, paddingHorizontal: 10, paddingVertical: 4, marginBottom: 12,
+                    borderRadius: 100, paddingHorizontal: 10, paddingVertical: 5, marginBottom: 12,
+                    flexDirection: 'row', alignItems: 'center', gap: 6,
                   }}>
-                    <Text style={{ color: COLORS.white, fontSize: 10, fontWeight: '800', letterSpacing: 1 }}>🎁  OFERTA ESPECIAL</Text>
+                    <Gift size={10} color={COLORS.white} strokeWidth={2.5} />
+                    <Text style={{ color: COLORS.white, fontSize: 10, fontWeight: '800', letterSpacing: 1 }}>OFERTA ESPECIAL</Text>
                   </View>
                   <Text style={{ color: COLORS.white, fontWeight: '800', fontSize: 20, letterSpacing: -0.4, lineHeight: 26, marginBottom: 6 }}>
                     Primeira lavagem{'\n'}com 20% off!
@@ -178,8 +181,13 @@ export default function HomeScreen() {
                     Código: <Text style={{ color: COLORS.white, fontWeight: '700', fontFamily: 'monospace' }}>CLEAN20</Text>
                   </Text>
                 </View>
-                <View style={{ marginLeft: 16 }}>
-                  <Text style={{ fontSize: 52 }}>✨</Text>
+                <View style={{
+                  marginLeft: 16, width: 64, height: 64, borderRadius: 32,
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  alignItems: 'center', justifyContent: 'center',
+                  borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
+                }}>
+                  <Gift size={30} color={COLORS.white} strokeWidth={1.5} />
                 </View>
               </View>
             </LinearGradient>
@@ -214,7 +222,7 @@ export default function HomeScreen() {
             <View style={{ marginBottom: 28 }}>
               <View style={{ paddingHorizontal: 24, marginBottom: 14 }}>
                 <Text style={{ fontSize: 18, fontWeight: '800', color: COLORS.white, letterSpacing: -0.3 }}>
-                  Vão até você 📍
+                  Vão até você
                 </Text>
                 <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, marginTop: 2 }}>
                   Serviço na porta da sua casa

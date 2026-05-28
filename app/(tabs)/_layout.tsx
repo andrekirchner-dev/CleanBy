@@ -1,21 +1,17 @@
 import { Tabs } from 'expo-router';
 import { View, Text, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Home, Search, Map, Calendar, User } from 'lucide-react-native';
 import { COLORS } from '../../src/lib/constants';
 
 const TAB_ITEMS = [
-  { name: 'index',       emoji: '⊹',  label: 'Home'    },
-  { name: 'buscar',      emoji: '◎',  label: 'Buscar'  },
-  { name: 'mapa',        emoji: '◈',  label: 'Mapa'    },
-  { name: 'agendamentos',emoji: '▦',  label: 'Agenda'  },
-  { name: 'perfil',      emoji: '◉',  label: 'Perfil'  },
+  { name: 'index',        Icon: Home,     label: 'Home'   },
+  { name: 'buscar',       Icon: Search,   label: 'Buscar' },
+  { name: 'mapa',         Icon: Map,      label: 'Mapa'   },
+  { name: 'agendamentos', Icon: Calendar, label: 'Agenda' },
+  { name: 'perfil',       Icon: User,     label: 'Perfil' },
 ];
 
-const EMOJIS: Record<string, string> = {
-  index: '🏠', buscar: '🔍', mapa: '🗺️', agendamentos: '📅', perfil: '👤',
-};
-
-function TabIcon({ name, label, focused }: { name: string; label: string; focused: boolean }) {
+function TabIcon({ Icon, label, focused }: { Icon: React.ComponentType<any>; label: string; focused: boolean }) {
   return (
     <View style={{ alignItems: 'center', gap: 4, paddingTop: 10 }}>
       {focused && (
@@ -25,7 +21,11 @@ function TabIcon({ name, label, focused }: { name: string; label: string; focuse
           backgroundColor: `${COLORS.chuva}20`,
         }} />
       )}
-      <Text style={{ fontSize: 20, lineHeight: 24 }}>{EMOJIS[name]}</Text>
+      <Icon
+        size={22}
+        color={focused ? COLORS.chuva : 'rgba(255,255,255,0.3)'}
+        strokeWidth={focused ? 2.2 : 1.8}
+      />
       <Text style={{
         fontSize: 10, fontWeight: focused ? '700' : '500',
         color: focused ? COLORS.chuva : 'rgba(255,255,255,0.3)',
@@ -59,7 +59,7 @@ export default function TabsLayout() {
           name={t.name}
           options={{
             tabBarIcon: ({ focused }) => (
-              <TabIcon name={t.name} label={t.label} focused={focused} />
+              <TabIcon Icon={t.Icon} label={t.label} focused={focused} />
             ),
           }}
         />

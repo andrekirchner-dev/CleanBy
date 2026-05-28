@@ -3,38 +3,34 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { Pencil, Car, CreditCard, MapPin, Bell, Shield, HelpCircle, FileText, LogOut, ChevronRight } from 'lucide-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { COLORS } from '../../src/lib/constants';
 import { LoyaltyCard } from '../../src/components/ui/LoyaltyCard';
 import { ProModal } from '../../src/components/ui/ProModal';
 import { Badge } from '../../src/components/ui/Badge';
 
-const MOCK_VEHICLES = [
-  { id: 'v1', plate: 'ABC-1234', model: 'Honda Civic', color: 'Prata', year: 2022 },
-  { id: 'v2', plate: 'XYZ-5678', model: 'Toyota Corolla', color: 'Branco', year: 2020 },
-];
-
 const MENU_SECTIONS = [
   {
     title: 'Conta',
     items: [
-      { icon: '🚗', label: 'Meus veículos', sub: '2 veículos' },
-      { icon: '🏷️', label: 'Formas de pagamento', sub: 'Cartão, Pix' },
-      { icon: '📍', label: 'Endereços salvos', sub: '1 endereço' },
+      { Icon: Car,         label: 'Meus veículos',       sub: '2 veículos' },
+      { Icon: CreditCard,  label: 'Formas de pagamento',  sub: 'Cartão, Pix' },
+      { Icon: MapPin,      label: 'Endereços salvos',     sub: '1 endereço' },
     ],
   },
   {
     title: 'Preferências',
     items: [
-      { icon: '🔔', label: 'Notificações', sub: 'Ativadas' },
-      { icon: '🛡️', label: 'Privacidade e segurança', sub: '' },
+      { Icon: Bell,   label: 'Notificações',        sub: 'Ativadas' },
+      { Icon: Shield, label: 'Privacidade e segurança', sub: '' },
     ],
   },
   {
     title: 'Suporte',
     items: [
-      { icon: '❓', label: 'Central de ajuda', sub: '' },
-      { icon: '📋', label: 'Termos de uso', sub: '' },
+      { Icon: HelpCircle, label: 'Central de ajuda', sub: '' },
+      { Icon: FileText,   label: 'Termos de uso',    sub: '' },
     ],
   },
 ];
@@ -101,7 +97,7 @@ export default function PerfilScreen() {
                 borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
                 alignItems: 'center', justifyContent: 'center',
               }}>
-                <Text style={{ fontSize: 15 }}>✏️</Text>
+                <Pencil size={15} color="rgba(255,255,255,0.7)" strokeWidth={2} />
               </TouchableOpacity>
             </View>
 
@@ -158,7 +154,7 @@ export default function PerfilScreen() {
                     backgroundColor: 'rgba(0,201,160,0.2)',
                     alignItems: 'center', justifyContent: 'center', marginLeft: 14,
                   }}>
-                    <Text style={{ color: COLORS.verdeAgua, fontSize: 18, fontWeight: '700' }}>›</Text>
+                    <ChevronRight size={18} color={COLORS.verdeAgua} strokeWidth={2.5} />
                   </View>
                 </LinearGradient>
               </TouchableOpacity>
@@ -203,13 +199,13 @@ export default function PerfilScreen() {
                         backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
                         alignItems: 'center', justifyContent: 'center', marginRight: 14,
                       }}>
-                        <Text style={{ fontSize: 17 }}>{item.icon}</Text>
+                        <item.Icon size={17} color="rgba(255,255,255,0.6)" strokeWidth={1.8} />
                       </View>
                       <Text style={{ flex: 1, color: 'rgba(255,255,255,0.75)', fontSize: 15 }}>{item.label}</Text>
                       {item.sub ? (
                         <Text style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, marginRight: 8 }}>{item.sub}</Text>
                       ) : null}
-                      <Text style={{ color: 'rgba(255,255,255,0.2)', fontSize: 20, lineHeight: 22 }}>›</Text>
+                      <ChevronRight size={18} color="rgba(255,255,255,0.2)" strokeWidth={2} />
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -223,8 +219,10 @@ export default function PerfilScreen() {
                 borderRadius: 100, padding: 16, alignItems: 'center',
                 borderWidth: 1, borderColor: 'rgba(226,75,74,0.25)',
                 backgroundColor: 'rgba(226,75,74,0.08)',
+                flexDirection: 'row', justifyContent: 'center', gap: 8,
               }}
             >
+              <LogOut size={16} color={COLORS.error} strokeWidth={2} />
               <Text style={{ color: COLORS.error, fontWeight: '700', fontSize: 15 }}>Sair da conta</Text>
             </TouchableOpacity>
 

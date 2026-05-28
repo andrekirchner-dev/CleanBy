@@ -10,11 +10,11 @@ interface BadgeProps {
 
 export function Badge({ label, variant = 'info', size = 'sm' }: BadgeProps) {
   const styles = {
-    open: { bg: '#DCFCE7', text: '#166534' },
-    closed: { bg: '#FEE2E2', text: '#991B1B' },
+    open: { bg: 'rgba(0,201,160,0.14)', text: '#00C9A0' },
+    closed: { bg: 'rgba(226,75,74,0.14)', text: '#FF6B6B' },
     pro: { bg: COLORS.verdeAgua, text: COLORS.noite },
-    info: { bg: COLORS.nevoa, text: COLORS.chuva },
-    warning: { bg: '#FEF3C7', text: '#92400E' },
+    info: { bg: 'rgba(26,122,200,0.18)', text: COLORS.chuva },
+    warning: { bg: 'rgba(239,159,39,0.18)', text: '#EF9F27' },
   };
 
   const { bg, text } = styles[variant];

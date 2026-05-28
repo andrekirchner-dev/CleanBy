@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { Calendar, Car, Star } from 'lucide-react-native';
 import { COLORS, STATUS_LABELS, STATUS_COLORS } from '../../src/lib/constants';
 import type { Booking } from '../../src/types';
 
@@ -85,7 +85,7 @@ export default function AgendamentosScreen() {
                 backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
                 alignItems: 'center', justifyContent: 'center',
               }}>
-                <Text style={{ fontSize: 36 }}>📅</Text>
+                <Calendar size={36} color="rgba(255,255,255,0.25)" strokeWidth={1.5} />
               </View>
               <View style={{ alignItems: 'center', gap: 6 }}>
                 <Text style={{ color: COLORS.white, fontSize: 17, fontWeight: '700' }}>
@@ -152,7 +152,7 @@ export default function AgendamentosScreen() {
                           width: 28, height: 28, borderRadius: 8,
                           backgroundColor: COLORS.surface, alignItems: 'center', justifyContent: 'center',
                         }}>
-                          <Text style={{ fontSize: 14 }}>📅</Text>
+                          <Calendar size={14} color="rgba(255,255,255,0.5)" strokeWidth={1.8} />
                         </View>
                         <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13 }}>
                           {new Date(booking.date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })} às {booking.time}
@@ -163,7 +163,7 @@ export default function AgendamentosScreen() {
                           width: 28, height: 28, borderRadius: 8,
                           backgroundColor: COLORS.surface, alignItems: 'center', justifyContent: 'center',
                         }}>
-                          <Text style={{ fontSize: 14 }}>🚗</Text>
+                          <Car size={14} color="rgba(255,255,255,0.5)" strokeWidth={1.8} />
                         </View>
                         <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13 }}>
                           {booking.vehicle?.model} · {booking.vehicle?.plate}
@@ -186,8 +186,10 @@ export default function AgendamentosScreen() {
                             backgroundColor: COLORS.surface, borderRadius: 100,
                             paddingHorizontal: 14, paddingVertical: 10,
                             borderWidth: 1, borderColor: COLORS.border,
+                            flexDirection: 'row', alignItems: 'center', gap: 6,
                           }}>
-                            <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: 13 }}>⭐ Avaliar</Text>
+                            <Star size={13} color="rgba(255,255,255,0.6)" strokeWidth={1.8} />
+                            <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: 13 }}>Avaliar</Text>
                           </TouchableOpacity>
                         )}
                         <TouchableOpacity

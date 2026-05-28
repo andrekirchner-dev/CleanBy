@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { ArrowLeft, AlertCircle } from 'lucide-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { COLORS } from '../../src/lib/constants';
 import { Button } from '../../src/components/ui/Button';
@@ -54,7 +55,7 @@ export default function LoginScreen() {
                 backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
                 alignItems: 'center', justifyContent: 'center',
               }}>
-                <Text style={{ color: COLORS.white, fontSize: 18, lineHeight: 22 }}>←</Text>
+                <ArrowLeft size={18} color="rgba(255,255,255,0.75)" strokeWidth={2} />
               </View>
             </TouchableOpacity>
 
@@ -84,7 +85,7 @@ export default function LoginScreen() {
             {/* Error */}
             {error ? (
               <View style={{ backgroundColor: 'rgba(226,75,74,0.1)', borderRadius: 14, padding: 14, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(226,75,74,0.25)', flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
-                <Text style={{ fontSize: 14 }}>⚠️</Text>
+                <AlertCircle size={16} color="#FF6B6B" strokeWidth={2} style={{ marginTop: 1 }} />
                 <Text style={{ color: '#FF6B6B', fontSize: 13, flex: 1, lineHeight: 18 }}>{error}</Text>
               </View>
             ) : null}

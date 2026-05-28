@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { Car, CalendarCheck, Award } from 'lucide-react-native';
 import { COLORS } from '../../src/lib/constants';
 import { Button } from '../../src/components/ui/Button';
 import { GoogleButton } from '../../src/components/ui/GoogleButton';
@@ -12,7 +13,7 @@ const { width } = Dimensions.get('window');
 
 const SLIDES = [
   {
-    emoji: '🚗',
+    Icon: Car,
     tag: 'MARKETPLACE',
     title: 'Seu carro,\ncuidado por quem\nentende',
     subtitle: 'Encontre os melhores lava-jatos e estéticas automotivas perto de você.',
@@ -20,7 +21,7 @@ const SLIDES = [
     colors: ['#0D1E3A', '#080F1E'] as [string, string],
   },
   {
-    emoji: '📅',
+    Icon: CalendarCheck,
     tag: 'AGENDAMENTO',
     title: 'Agende em\nsegundos,\nsem fila',
     subtitle: 'Escolha o serviço, data e horário. Confirmação instantânea e lembretes automáticos.',
@@ -28,7 +29,7 @@ const SLIDES = [
     colors: ['#0A1A30', '#080F1E'] as [string, string],
   },
   {
-    emoji: '✦',
+    Icon: Award,
     tag: 'FIDELIDADE',
     title: 'Acumule selos\ne ganhe\nlavagens grátis',
     subtitle: 'A cada serviço concluído, você acumula selos no cartão fidelidade digital.',
@@ -95,8 +96,6 @@ export default function OnboardingScreen() {
                 borderRadius: 140,
                 backgroundColor: s.accent,
                 opacity: 0.06,
-                // @ts-ignore
-                filter: 'blur(60px)',
               }} />
 
               {/* Radiant rings */}
@@ -118,7 +117,7 @@ export default function OnboardingScreen() {
                     borderWidth: 1, borderColor: `${s.accent}40`,
                     alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <Text style={{ fontSize: 44 }}>{s.emoji}</Text>
+                    <s.Icon size={44} color={s.accent} strokeWidth={1.5} />
                   </View>
                 </View>
               </View>
