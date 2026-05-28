@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
-import {
-  View, Text, ScrollView, TouchableOpacity,
-  Dimensions, SafeAreaView,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { COLORS } from '../../src/lib/constants';
 import { Button } from '../../src/components/ui/Button';
@@ -14,21 +13,27 @@ const { width } = Dimensions.get('window');
 const SLIDES = [
   {
     emoji: '🚗',
-    title: 'Seu carro, cuidado\npor quem entende',
+    tag: 'MARKETPLACE',
+    title: 'Seu carro,\ncuidado por quem\nentende',
     subtitle: 'Encontre os melhores lava-jatos e estéticas automotivas perto de você.',
-    color: '#1A7AC8',
+    accent: '#1A7AC8',
+    colors: ['#0D1E3A', '#080F1E'] as [string, string],
   },
   {
     emoji: '📅',
-    title: 'Agende em segundos,\nsem fila',
+    tag: 'AGENDAMENTO',
+    title: 'Agende em\nsegundos,\nsem fila',
     subtitle: 'Escolha o serviço, data e horário. Confirmação instantânea e lembretes automáticos.',
-    color: '#0E3D6B',
+    accent: '#2196F3',
+    colors: ['#0A1A30', '#080F1E'] as [string, string],
   },
   {
     emoji: '✦',
-    title: 'Acumule selos e\nganhe lavagens grátis',
+    tag: 'FIDELIDADE',
+    title: 'Acumule selos\ne ganhe\nlavagens grátis',
     subtitle: 'A cada serviço concluído, você acumula selos no cartão fidelidade digital.',
-    color: '#00C9A0',
+    accent: '#00C9A0',
+    colors: ['#071A15', '#080F1E'] as [string, string],
   },
 ];
 
@@ -47,76 +52,97 @@ export default function OnboardingScreen() {
   const handleGoogle = async () => {
     setError('');
     const result = await signInWithGoogle();
-    if (result?.error) {
-      setError(result.error);
-    } else {
-      router.replace('/(tabs)');
-    }
+    if (result?.error) setError(result.error);
+    else router.replace('/(tabs)');
   };
 
   const slide = SLIDES[current];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.noite }}>
-      {/* Skip */}
-      {current < SLIDES.length - 1 && (
-        <TouchableOpacity
-          onPress={() => goTo(SLIDES.length - 1)}
-          style={{ position: 'absolute', top: 56, right: 24, zIndex: 10 }}
-        >
-          <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '600', letterSpacing: 0.5 }}>
-            Pular
-          </Text>
-        </TouchableOpacity>
-      )}
+    <LinearGradient colors={slide.colors} style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
 
-      <View style={{ flex: 1 }}>
+        {/* Top bar */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: slide.accent }} />
+            <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 15, fontWeight: '800', letterSpacing: 0.5 }}>
+              CleanBy
+            </Text>
+          </View>
+          {current < SLIDES.length - 1 && (
+            <TouchableOpacity onPress={() => goTo(SLIDES.length - 1)}
+              style={{ backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 100, paddingHorizontal: 16, paddingVertical: 8 }}>
+              <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '600' }}>Pular</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Slides */}
         <ScrollView
           ref={scrollRef}
-          horizontal
-          pagingEnabled
+          horizontal pagingEnabled
           showsHorizontalScrollIndicator={false}
           scrollEnabled={false}
           style={{ flex: 1 }}
         >
           {SLIDES.map((s, i) => (
-            <View
-              key={i}
-              style={{ width, flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 36 }}
-            >
-              {/* Decorative rings */}
+            <View key={i} style={{ width, flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
+              {/* Glow blob */}
               <View style={{
-                width: 220, height: 220, borderRadius: 110,
-                backgroundColor: `${s.color}0D`,
+                position: 'absolute', top: '10%',
+                width: 280, height: 280,
+                borderRadius: 140,
+                backgroundColor: s.accent,
+                opacity: 0.06,
+                // @ts-ignore
+                filter: 'blur(60px)',
+              }} />
+
+              {/* Radiant rings */}
+              <View style={{
+                width: 200, height: 200, borderRadius: 100,
+                borderWidth: 1, borderColor: `${s.accent}18`,
                 alignItems: 'center', justifyContent: 'center',
-                marginBottom: 48,
+                marginBottom: 44,
               }}>
                 <View style={{
-                  width: 164, height: 164, borderRadius: 82,
-                  backgroundColor: `${s.color}15`,
-                  borderWidth: 1, borderColor: `${s.color}40`,
+                  width: 152, height: 152, borderRadius: 76,
+                  borderWidth: 1, borderColor: `${s.accent}28`,
+                  backgroundColor: `${s.accent}08`,
                   alignItems: 'center', justifyContent: 'center',
                 }}>
                   <View style={{
-                    width: 110, height: 110, borderRadius: 55,
-                    backgroundColor: `${s.color}25`,
+                    width: 104, height: 104, borderRadius: 52,
+                    backgroundColor: `${s.accent}18`,
+                    borderWidth: 1, borderColor: `${s.accent}40`,
                     alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <Text style={{ fontSize: 48 }}>{s.emoji}</Text>
+                    <Text style={{ fontSize: 44 }}>{s.emoji}</Text>
                   </View>
                 </View>
               </View>
 
+              {/* Tag */}
+              <View style={{
+                backgroundColor: `${s.accent}18`, borderRadius: 100,
+                paddingHorizontal: 12, paddingVertical: 5,
+                borderWidth: 1, borderColor: `${s.accent}30`,
+                marginBottom: 20,
+              }}>
+                <Text style={{ color: s.accent, fontSize: 10, fontWeight: '800', letterSpacing: 1.5 }}>{s.tag}</Text>
+              </View>
+
               <Text style={{
-                fontSize: 32, fontWeight: '800', color: COLORS.white,
-                textAlign: 'center', lineHeight: 42, marginBottom: 16,
-                letterSpacing: -0.5,
+                fontSize: 36, fontWeight: '800', color: COLORS.white,
+                textAlign: 'center', lineHeight: 44, marginBottom: 18,
+                letterSpacing: -0.8,
               }}>
                 {s.title}
               </Text>
               <Text style={{
-                fontSize: 16, color: 'rgba(255,255,255,0.5)',
-                textAlign: 'center', lineHeight: 26,
+                fontSize: 15, color: 'rgba(255,255,255,0.45)',
+                textAlign: 'center', lineHeight: 24,
               }}>
                 {s.subtitle}
               </Text>
@@ -125,48 +151,35 @@ export default function OnboardingScreen() {
         </ScrollView>
 
         {/* Dots */}
-        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginBottom: 32 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginBottom: 24 }}>
           {SLIDES.map((_, i) => (
-            <TouchableOpacity key={i} onPress={() => goTo(i)}>
+            <TouchableOpacity key={i} onPress={() => goTo(i)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <View style={{
-                width: i === current ? 28 : 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: i === current ? COLORS.chuva : 'rgba(255,255,255,0.2)',
+                height: 6, width: i === current ? 32 : 6, borderRadius: 3,
+                backgroundColor: i === current ? slide.accent : 'rgba(255,255,255,0.15)',
               }} />
             </TouchableOpacity>
           ))}
         </View>
 
         {/* CTAs */}
-        <View style={{ paddingHorizontal: 24, gap: 12, paddingBottom: 36 }}>
+        <View style={{ paddingHorizontal: 24, paddingBottom: 12, gap: 10 }}>
           {current < SLIDES.length - 1 ? (
             <Button label="Próximo" onPress={() => goTo(current + 1)} fullWidth size="lg" />
           ) : (
             <>
               {error ? (
-                <View style={{ backgroundColor: 'rgba(226,75,74,0.15)', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: 'rgba(226,75,74,0.3)' }}>
+                <View style={{ backgroundColor: 'rgba(226,75,74,0.12)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(226,75,74,0.25)' }}>
                   <Text style={{ color: '#FF6B6B', fontSize: 13, textAlign: 'center' }}>{error}</Text>
                 </View>
               ) : null}
-
               <GoogleButton onPress={handleGoogle} loading={googleLoading} />
-
-              <Button
-                label="Criar conta com e-mail"
-                onPress={() => router.push('/(auth)/signup')}
-                fullWidth size="lg"
-              />
-              <Button
-                label="Já tenho conta"
-                onPress={() => router.push('/(auth)/login')}
-                variant="outline"
-                fullWidth size="lg"
-              />
+              <Button label="Criar conta com e-mail" onPress={() => router.push('/(auth)/signup')} fullWidth size="lg" />
+              <Button label="Já tenho conta" onPress={() => router.push('/(auth)/login')} variant="outline" fullWidth size="lg" />
             </>
           )}
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }

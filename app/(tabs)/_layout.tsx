@@ -1,21 +1,34 @@
 import { Tabs } from 'expo-router';
-import { View, Text } from 'react-native';
+import { View, Text, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../../src/lib/constants';
 
-function TabIcon({ emoji, label, focused }: { emoji: string; label: string; focused: boolean }) {
+const TAB_ITEMS = [
+  { name: 'index',       emoji: '⊹',  label: 'Home'    },
+  { name: 'buscar',      emoji: '◎',  label: 'Buscar'  },
+  { name: 'mapa',        emoji: '◈',  label: 'Mapa'    },
+  { name: 'agendamentos',emoji: '▦',  label: 'Agenda'  },
+  { name: 'perfil',      emoji: '◉',  label: 'Perfil'  },
+];
+
+const EMOJIS: Record<string, string> = {
+  index: '🏠', buscar: '🔍', mapa: '🗺️', agendamentos: '📅', perfil: '👤',
+};
+
+function TabIcon({ name, label, focused }: { name: string; label: string; focused: boolean }) {
   return (
-    <View style={{ alignItems: 'center', gap: 3, paddingTop: 8 }}>
-      <View style={{
-        width: 44, height: 32, borderRadius: 16,
-        backgroundColor: focused ? `${COLORS.chuva}25` : 'transparent',
-        alignItems: 'center', justifyContent: 'center',
-      }}>
-        <Text style={{ fontSize: 18 }}>{emoji}</Text>
-      </View>
+    <View style={{ alignItems: 'center', gap: 4, paddingTop: 10 }}>
+      {focused && (
+        <View style={{
+          position: 'absolute', top: 6,
+          width: 48, height: 30, borderRadius: 15,
+          backgroundColor: `${COLORS.chuva}20`,
+        }} />
+      )}
+      <Text style={{ fontSize: 20, lineHeight: 24 }}>{EMOJIS[name]}</Text>
       <Text style={{
-        fontSize: 10,
-        color: focused ? COLORS.chuva : 'rgba(255,255,255,0.35)',
-        fontWeight: focused ? '700' : '500',
+        fontSize: 10, fontWeight: focused ? '700' : '500',
+        color: focused ? COLORS.chuva : 'rgba(255,255,255,0.3)',
         letterSpacing: 0.3,
       }}>
         {label}
@@ -31,44 +44,26 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: COLORS.noite,
-          borderTopColor: COLORS.border,
+          borderTopColor: 'rgba(255,255,255,0.06)',
           borderTopWidth: 1,
-          height: 76,
-          paddingBottom: 8,
+          height: Platform.OS === 'web' ? 72 : 80,
+          paddingBottom: Platform.OS === 'web' ? 8 : 16,
+          paddingTop: 0,
         },
         tabBarShowLabel: false,
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" label="Home" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="buscar"
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🔍" label="Buscar" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="mapa"
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🗺️" label="Mapa" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="agendamentos"
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon emoji="📅" label="Agenda" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="perfil"
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon emoji="👤" label="Perfil" focused={focused} />,
-        }}
-      />
+      {TAB_ITEMS.map((t) => (
+        <Tabs.Screen
+          key={t.name}
+          name={t.name}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <TabIcon name={t.name} label={t.label} focused={focused} />
+            ),
+          }}
+        />
+      ))}
     </Tabs>
   );
 }

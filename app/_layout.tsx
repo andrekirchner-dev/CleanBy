@@ -2,66 +2,96 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { onAuthStateChanged, getRedirectResult } from 'firebase/auth';
-import { Platform, View } from 'react-native';
+import { Platform, View, Text } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { auth } from '../src/lib/firebase';
 import { useAuthStore } from '../src/stores/authStore';
 
 function PhoneShell({ children }: { children: React.ReactNode }) {
   if (Platform.OS !== 'web') return <>{children}</>;
+
   return (
     <View style={{
       flex: 1,
-      // @ts-ignore — web-only
-      backgroundColor: '#0A0A0A',
+      // @ts-ignore
+      background: 'radial-gradient(ellipse at 30% 20%, #0D1E3A 0%, #050A12 60%, #000 100%)',
       alignItems: 'center',
       justifyContent: 'center',
+      minHeight: '100vh',
     }}>
-      {/* Decorative background dots */}
+      {/* Dot grid */}
       <View style={{
-        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+        position: 'absolute', inset: 0,
         // @ts-ignore
-        backgroundImage: 'radial-gradient(circle, rgba(26,122,200,0.06) 1px, transparent 1px)',
-        backgroundSize: '32px 32px',
+        backgroundImage: 'radial-gradient(circle, rgba(26,122,200,0.07) 1px, transparent 1px)',
+        backgroundSize: '28px 28px',
+        pointerEvents: 'none',
       }} />
 
-      {/* Phone frame */}
-      <View style={{
-        width: 393,
-        height: 852,
-        borderRadius: 54,
-        // @ts-ignore — web-only
-        boxShadow: '0 50px 120px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.06), inset 0 0 0 1px rgba(255,255,255,0.04)',
-        overflow: 'hidden',
-        borderWidth: 12,
-        borderColor: '#1A1A1A',
-        backgroundColor: '#080F1E',
-        position: 'relative',
-      }}>
-        {/* Dynamic Island */}
+      {/* Phone */}
+      <View style={{ alignItems: 'center', gap: 20 }}>
+        {/* Side buttons (visual) */}
         <View style={{
-          position: 'absolute',
-          top: 16,
-          left: 137,
-          width: 120,
-          height: 34,
-          backgroundColor: '#000',
-          borderRadius: 20,
-          zIndex: 9999,
+          position: 'absolute', left: -14, top: 120,
+          gap: 16, alignItems: 'center',
+        }}>
+          {[40, 72, 72].map((h, i) => (
+            <View key={i} style={{ width: 4, height: h, borderRadius: 2, backgroundColor: '#2a2a2a' }} />
+          ))}
+        </View>
+        <View style={{
+          position: 'absolute', right: -14, top: 180,
+          width: 4, height: 90, borderRadius: 2, backgroundColor: '#2a2a2a',
         }} />
 
-        <View style={{ flex: 1 }}>
-          {children}
-        </View>
-      </View>
+        {/* Phone frame */}
+        <View style={{
+          width: 393,
+          height: 852,
+          borderRadius: 54,
+          // @ts-ignore
+          boxShadow: '0 60px 140px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.08), 0 0 0 12px #181818, 0 0 0 13px rgba(255,255,255,0.04)',
+          overflow: 'hidden',
+          backgroundColor: '#080F1E',
+          position: 'relative',
+        }}>
+          {/* Screen glare */}
+          <View style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: 200,
+            // @ts-ignore
+            background: 'linear-gradient(160deg, rgba(255,255,255,0.04) 0%, transparent 60%)',
+            zIndex: 1, pointerEvents: 'none',
+          }} />
 
-      {/* Label below */}
-      <View style={{ marginTop: 24, alignItems: 'center', gap: 4 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {/* Dynamic Island */}
+          <View style={{
+            position: 'absolute', top: 14, left: 137,
+            width: 120, height: 36,
+            backgroundColor: '#000',
+            borderRadius: 20,
+            zIndex: 9999,
+            // @ts-ignore
+            boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
+          }} />
+
+          <SafeAreaProvider initialMetrics={{
+            insets: { top: 54, bottom: 24, left: 0, right: 0 },
+            frame: { x: 0, y: 0, width: 393, height: 852 },
+          }}>
+            <View style={{ flex: 1 }}>
+              {children}
+            </View>
+          </SafeAreaProvider>
+        </View>
+
+        {/* Label */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#1A7AC8' }} />
           {/* @ts-ignore */}
-          <View style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, fontFamily: 'system-ui' }}>
-            CleanBy — preview
-          </View>
+          <Text style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', letterSpacing: 1 }}>
+            CLEANBY · PREVIEW
+          </Text>
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#00C9A0' }} />
         </View>
       </View>
     </View>
@@ -77,35 +107,19 @@ export default function RootLayout() {
     let timeout: ReturnType<typeof setTimeout> | null = null;
 
     const init = async () => {
-      // Verifica redirect pendente (Google OAuth com redirect) antes de tudo.
-      // Isso evita a race condition onde onAuthStateChanged dispara null
-      // antes de getRedirectResult processar o usuário recém-logado.
       try {
         const result = await getRedirectResult(auth);
-        if (result?.user && mounted) {
-          setFirebaseUser(result.user);
-        }
+        if (result?.user && mounted) setFirebaseUser(result.user);
       } catch (_) {}
 
       if (!mounted) return;
 
-      // Após checar o redirect, configura o listener normal com timeout de segurança
-      timeout = setTimeout(() => {
-        if (mounted) setFirebaseUser(null);
-      }, 5000);
+      timeout = setTimeout(() => { if (mounted) setFirebaseUser(null); }, 5000);
 
       unsubscribeAuth = onAuthStateChanged(
         auth,
-        (user) => {
-          if (!mounted) return;
-          if (timeout) clearTimeout(timeout);
-          setFirebaseUser(user);
-        },
-        () => {
-          if (!mounted) return;
-          if (timeout) clearTimeout(timeout);
-          setFirebaseUser(null);
-        }
+        (user) => { if (!mounted) return; if (timeout) clearTimeout(timeout); setFirebaseUser(user); },
+        () => { if (!mounted) return; if (timeout) clearTimeout(timeout); setFirebaseUser(null); }
       );
     };
 

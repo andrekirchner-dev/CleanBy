@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { COLORS, STATUS_LABELS, STATUS_COLORS } from '../../src/lib/constants';
 import type { Booking } from '../../src/types';
@@ -34,99 +36,178 @@ export default function AgendamentosScreen() {
   const list = tab === 'proximos' ? upcoming : history;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.offWhite }}>
-      <View style={{ backgroundColor: COLORS.noite, padding: 20, paddingBottom: 0 }}>
-        <Text style={{ color: COLORS.white, fontSize: 22, fontWeight: '800', marginBottom: 16 }}>
-          Meus Agendamentos
-        </Text>
-        <View style={{ flexDirection: 'row' }}>
-          {(['proximos', 'historico'] as Tab[]).map((t) => (
-            <TouchableOpacity
-              key={t}
-              onPress={() => setTab(t)}
-              style={{
-                paddingBottom: 12, paddingHorizontal: 4, marginRight: 24,
-                borderBottomWidth: 2,
-                borderBottomColor: tab === t ? COLORS.chuva : 'transparent',
-              }}
-            >
-              <Text style={{ color: tab === t ? COLORS.white : 'rgba(255,255,255,0.5)', fontWeight: '700', fontSize: 15 }}>
-                {t === 'proximos' ? 'Próximos' : 'Histórico'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+    <View style={{ flex: 1, backgroundColor: COLORS.noite }}>
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
 
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }} showsVerticalScrollIndicator={false}>
-        {list.length === 0 ? (
-          <View style={{ alignItems: 'center', marginTop: 60, gap: 12 }}>
-            <Text style={{ fontSize: 48 }}>📅</Text>
-            <Text style={{ color: COLORS.gray400, fontSize: 16 }}>
-              {tab === 'proximos' ? 'Nenhum agendamento próximo' : 'Nenhum histórico ainda'}
-            </Text>
-            {tab === 'proximos' && (
-              <TouchableOpacity onPress={() => router.push('/(tabs)')}>
-                <Text style={{ color: COLORS.chuva, fontWeight: '700', fontSize: 15 }}>Agendar agora →</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ) : (
-          list.map((booking) => (
-            <View
-              key={booking.id}
-              style={{
-                backgroundColor: COLORS.white, borderRadius: 16, padding: 16,
-                shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
-              }}
-            >
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
-                <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.noite, flex: 1 }} numberOfLines={1}>
-                  {booking.service?.name}
-                </Text>
-                <View style={{
-                  backgroundColor: STATUS_COLORS[booking.status] + '20',
-                  paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20, marginLeft: 8,
+        {/* Header */}
+        <View style={{ paddingHorizontal: 24, paddingTop: 6, paddingBottom: 4 }}>
+          <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 6 }}>
+            Agenda
+          </Text>
+          <Text style={{ color: COLORS.white, fontSize: 28, fontWeight: '800', letterSpacing: -0.5, marginBottom: 20 }}>
+            Meus agendamentos
+          </Text>
+
+          {/* Tabs */}
+          <View style={{
+            flexDirection: 'row',
+            backgroundColor: COLORS.surface,
+            borderRadius: 14, padding: 4,
+            borderWidth: 1, borderColor: COLORS.border,
+          }}>
+            {(['proximos', 'historico'] as Tab[]).map((t) => (
+              <TouchableOpacity
+                key={t}
+                onPress={() => setTab(t)}
+                style={{
+                  flex: 1, paddingVertical: 10, borderRadius: 11,
+                  backgroundColor: tab === t ? COLORS.chuva : 'transparent',
+                  alignItems: 'center',
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={{
+                  color: tab === t ? COLORS.white : 'rgba(255,255,255,0.35)',
+                  fontWeight: '700', fontSize: 14,
                 }}>
-                  <Text style={{ color: STATUS_COLORS[booking.status], fontSize: 11, fontWeight: '700' }}>
-                    {STATUS_LABELS[booking.status]}
-                  </Text>
-                </View>
-              </View>
-
-              <Text style={{ color: COLORS.gray600, fontSize: 13, marginBottom: 4 }}>
-                🏪 {booking.establishment?.name}
-              </Text>
-              <Text style={{ color: COLORS.gray600, fontSize: 13, marginBottom: 4 }}>
-                📅 {new Date(booking.date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })} às {booking.time}
-              </Text>
-              <Text style={{ color: COLORS.gray600, fontSize: 13, marginBottom: 12 }}>
-                🚗 {booking.vehicle?.model} • {booking.vehicle?.plate}
-              </Text>
-
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ color: COLORS.noite, fontWeight: '700', fontSize: 15 }}>
-                  R$ {booking.total_amount.toFixed(2).replace('.', ',')}
+                  {t === 'proximos' ? 'Próximos' : 'Histórico'}
                 </Text>
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  {booking.status === 'concluido' && (
-                    <TouchableOpacity style={{ backgroundColor: COLORS.nevoa, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 }}>
-                      <Text style={{ color: COLORS.chuva, fontWeight: '700', fontSize: 13 }}>Avaliar</Text>
-                    </TouchableOpacity>
-                  )}
-                  <TouchableOpacity
-                    onPress={() => router.push(`/estabelecimento/${booking.establishment_id}`)}
-                    style={{ backgroundColor: COLORS.chuva, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 }}
-                  >
-                    <Text style={{ color: COLORS.white, fontWeight: '700', fontSize: 13 }}>Ver detalhes</Text>
-                  </TouchableOpacity>
-                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 20, gap: 14 }} showsVerticalScrollIndicator={false}>
+          {list.length === 0 ? (
+            <View style={{ alignItems: 'center', marginTop: 60, gap: 16 }}>
+              <View style={{
+                width: 80, height: 80, borderRadius: 40,
+                backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Text style={{ fontSize: 36 }}>📅</Text>
               </View>
+              <View style={{ alignItems: 'center', gap: 6 }}>
+                <Text style={{ color: COLORS.white, fontSize: 17, fontWeight: '700' }}>
+                  {tab === 'proximos' ? 'Nenhum agendamento' : 'Nenhum histórico'}
+                </Text>
+                <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14, textAlign: 'center' }}>
+                  {tab === 'proximos' ? 'Seus próximos serviços aparecerão aqui' : 'Seus serviços concluídos aparecerão aqui'}
+                </Text>
+              </View>
+              {tab === 'proximos' && (
+                <TouchableOpacity
+                  onPress={() => router.push('/(tabs)')}
+                  style={{
+                    backgroundColor: COLORS.chuva, borderRadius: 100,
+                    paddingHorizontal: 24, paddingVertical: 12,
+                  }}
+                >
+                  <Text style={{ color: COLORS.white, fontWeight: '700', fontSize: 14 }}>Agendar agora</Text>
+                </TouchableOpacity>
+              )}
             </View>
-          ))
-        )}
-      </ScrollView>
-    </SafeAreaView>
+          ) : (
+            list.map((booking) => {
+              const statusColor = STATUS_COLORS[booking.status];
+              return (
+                <View
+                  key={booking.id}
+                  style={{
+                    backgroundColor: COLORS.noiteSurface,
+                    borderRadius: 20, overflow: 'hidden',
+                    borderWidth: 1, borderColor: COLORS.border,
+                  }}
+                >
+                  {/* Status bar top */}
+                  <View style={{ height: 3, backgroundColor: statusColor }} />
+
+                  <View style={{ padding: 18 }}>
+                    {/* Header row */}
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 16, fontWeight: '800', color: COLORS.white, letterSpacing: -0.2, marginBottom: 2 }} numberOfLines={1}>
+                          {booking.service?.name}
+                        </Text>
+                        <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>
+                          {booking.establishment?.name}
+                        </Text>
+                      </View>
+                      <View style={{
+                        backgroundColor: `${statusColor}18`,
+                        paddingHorizontal: 10, paddingVertical: 5,
+                        borderRadius: 100, marginLeft: 12,
+                        borderWidth: 1, borderColor: `${statusColor}30`,
+                      }}>
+                        <Text style={{ color: statusColor, fontSize: 11, fontWeight: '700' }}>
+                          {STATUS_LABELS[booking.status]}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Details */}
+                    <View style={{ gap: 8, marginBottom: 16 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <View style={{
+                          width: 28, height: 28, borderRadius: 8,
+                          backgroundColor: COLORS.surface, alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <Text style={{ fontSize: 14 }}>📅</Text>
+                        </View>
+                        <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13 }}>
+                          {new Date(booking.date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })} às {booking.time}
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <View style={{
+                          width: 28, height: 28, borderRadius: 8,
+                          backgroundColor: COLORS.surface, alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <Text style={{ fontSize: 14 }}>🚗</Text>
+                        </View>
+                        <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13 }}>
+                          {booking.vehicle?.model} · {booking.vehicle?.plate}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Footer */}
+                    <View style={{ height: 1, backgroundColor: COLORS.border, marginBottom: 14 }} />
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View>
+                        <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginBottom: 2 }}>Total</Text>
+                        <Text style={{ color: COLORS.white, fontWeight: '800', fontSize: 18, letterSpacing: -0.3 }}>
+                          R$ {booking.total_amount.toFixed(2).replace('.', ',')}
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        {booking.status === 'concluido' && (
+                          <TouchableOpacity style={{
+                            backgroundColor: COLORS.surface, borderRadius: 100,
+                            paddingHorizontal: 14, paddingVertical: 10,
+                            borderWidth: 1, borderColor: COLORS.border,
+                          }}>
+                            <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: 13 }}>⭐ Avaliar</Text>
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity
+                          onPress={() => router.push(`/estabelecimento/${booking.establishment_id}`)}
+                          style={{
+                            backgroundColor: COLORS.chuva, borderRadius: 100,
+                            paddingHorizontal: 16, paddingVertical: 10,
+                          }}
+                        >
+                          <Text style={{ color: COLORS.white, fontWeight: '700', fontSize: 13 }}>Ver detalhes</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              );
+            })
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
