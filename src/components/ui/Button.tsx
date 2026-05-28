@@ -25,7 +25,7 @@ export function Button({
 }: ButtonProps) {
   const bgColors = {
     primary: COLORS.chuva,
-    secondary: COLORS.noite,
+    secondary: COLORS.surfaceHigh,
     outline: 'transparent',
     pro: COLORS.verdeAgua,
     ghost: 'transparent',
@@ -34,34 +34,33 @@ export function Button({
   const textColors = {
     primary: COLORS.white,
     secondary: COLORS.white,
-    outline: COLORS.chuva,
+    outline: COLORS.white,
     pro: COLORS.noite,
     ghost: COLORS.chuva,
   };
 
-  const paddings = { sm: 8, md: 14, lg: 18 };
-  const fontSizes = { sm: 13, md: 15, lg: 17 };
-  const borderRadius = 12;
+  const paddings = { sm: 10, md: 14, lg: 18 };
+  const fontSizes = { sm: 13, md: 15, lg: 16 };
 
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled || loading}
       style={{
-        backgroundColor: disabled ? COLORS.gray200 : bgColors[variant],
+        backgroundColor: disabled ? 'rgba(255,255,255,0.08)' : bgColors[variant],
         paddingVertical: paddings[size],
-        paddingHorizontal: paddings[size] * 1.8,
-        borderRadius,
+        paddingHorizontal: paddings[size] * 2,
+        borderRadius: 100,
         borderWidth: variant === 'outline' ? 1.5 : 0,
-        borderColor: variant === 'outline' ? COLORS.chuva : 'transparent',
+        borderColor: variant === 'outline' ? 'rgba(255,255,255,0.2)' : 'transparent',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
         alignSelf: fullWidth ? 'stretch' : 'flex-start',
-        opacity: disabled ? 0.6 : 1,
+        opacity: disabled ? 0.5 : 1,
       }}
-      activeOpacity={0.8}
+      activeOpacity={0.75}
     >
       {loading ? (
         <ActivityIndicator color={textColors[variant]} size="small" />
@@ -70,10 +69,10 @@ export function Button({
           {icon && <View>{icon}</View>}
           <Text
             style={{
-              color: disabled ? COLORS.gray400 : textColors[variant],
+              color: disabled ? 'rgba(255,255,255,0.3)' : textColors[variant],
               fontSize: fontSizes[size],
               fontWeight: '700',
-              letterSpacing: 0.3,
+              letterSpacing: 0.4,
             }}
           >
             {label}

@@ -18,19 +18,16 @@ export function EstablishmentCard({ establishment, style }: EstablishmentCardPro
     <TouchableOpacity
       onPress={() => router.push(`/estabelecimento/${establishment.id}`)}
       style={{
-        backgroundColor: COLORS.white,
-        borderRadius: 16,
+        backgroundColor: COLORS.noiteSurface,
+        borderRadius: 20,
         overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: COLORS.border,
         ...style,
       }}
-      activeOpacity={0.9}
+      activeOpacity={0.85}
     >
-      <View style={{ height: 140, backgroundColor: COLORS.nevoa }}>
+      <View style={{ height: 148, backgroundColor: 'rgba(26,122,200,0.08)' }}>
         {establishment.cover_url ? (
           <Image
             source={{ uri: establishment.cover_url }}
@@ -39,17 +36,17 @@ export function EstablishmentCard({ establishment, style }: EstablishmentCardPro
           />
         ) : (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 40 }}>🚗</Text>
+            <Text style={{ fontSize: 48 }}>🚗</Text>
           </View>
         )}
-        <View style={{ position: 'absolute', top: 10, right: 10 }}>
+        <View style={{ position: 'absolute', top: 12, right: 12 }}>
           <Badge
             label={establishment.is_open ? 'Aberto' : 'Fechado'}
             variant={establishment.is_open ? 'open' : 'closed'}
           />
         </View>
         {establishment.has_mobile_service && (
-          <View style={{ position: 'absolute', top: 10, left: 10 }}>
+          <View style={{ position: 'absolute', top: 12, left: 12 }}>
             <Badge label="Vai até você" variant="info" />
           </View>
         )}
@@ -57,11 +54,11 @@ export function EstablishmentCard({ establishment, style }: EstablishmentCardPro
 
       <View style={{ padding: 14, gap: 6 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.noite, flex: 1 }} numberOfLines={1}>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.white, flex: 1, letterSpacing: 0.1 }} numberOfLines={1}>
             {establishment.name}
           </Text>
           {establishment.distance_km !== undefined && (
-            <Text style={{ color: COLORS.gray400, fontSize: 12, marginLeft: 8 }}>
+            <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, marginLeft: 8 }}>
               {establishment.distance_km < 1
                 ? `${Math.round(establishment.distance_km * 1000)}m`
                 : `${establishment.distance_km.toFixed(1)}km`}

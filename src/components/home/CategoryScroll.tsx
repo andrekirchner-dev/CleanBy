@@ -35,7 +35,7 @@ export function CategoryScroll({ selected, onSelect }: CategoryScrollProps) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 20, gap: 10, paddingVertical: 4 }}
+      contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingVertical: 4 }}
     >
       {CATEGORIES.map((cat) => {
         const active = selected === cat;
@@ -43,34 +43,26 @@ export function CategoryScroll({ selected, onSelect }: CategoryScrollProps) {
           <TouchableOpacity
             key={cat}
             onPress={() => onSelect(active ? null : cat)}
+            activeOpacity={0.75}
             style={{
+              flexDirection: 'row',
               alignItems: 'center',
               gap: 6,
-              minWidth: 68,
+              paddingVertical: 10,
+              paddingHorizontal: 16,
+              borderRadius: 100,
+              backgroundColor: active ? COLORS.chuva : COLORS.surface,
+              borderWidth: 1,
+              borderColor: active ? 'transparent' : COLORS.border,
             }}
-            activeOpacity={0.8}
           >
-            <View
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: 28,
-                backgroundColor: active ? COLORS.chuva : COLORS.nevoa,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 24 }}>{CATEGORY_EMOJI[cat]}</Text>
-            </View>
-            <Text
-              style={{
-                fontSize: 10,
-                fontWeight: active ? '700' : '500',
-                color: active ? COLORS.chuva : COLORS.gray600,
-                textAlign: 'center',
-              }}
-              numberOfLines={2}
-            >
+            <Text style={{ fontSize: 14 }}>{CATEGORY_EMOJI[cat]}</Text>
+            <Text style={{
+              fontSize: 13,
+              fontWeight: active ? '700' : '500',
+              color: active ? COLORS.white : 'rgba(255,255,255,0.55)',
+              letterSpacing: 0.2,
+            }}>
               {CATEGORY_LABELS[cat]}
             </Text>
           </TouchableOpacity>

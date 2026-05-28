@@ -11,28 +11,30 @@ export function LoyaltyCard({ stamps, isPro = false }: LoyaltyCardProps) {
   const displayStamps = Math.min(stamps, LOYALTY_STAMPS_REQUIRED);
 
   return (
-    <View
-      style={{
-        backgroundColor: COLORS.oceano,
-        borderRadius: 16,
-        padding: 20,
-        gap: 14,
-      }}
-    >
+    <View style={{
+      backgroundColor: COLORS.noiteSurface,
+      borderRadius: 20,
+      padding: 20,
+      gap: 16,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={{ color: COLORS.white, fontSize: 16, fontWeight: '700' }}>
-          Cartão Fidelidade
-        </Text>
+        <View>
+          <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>
+            Fidelidade
+          </Text>
+          <Text style={{ color: COLORS.white, fontSize: 16, fontWeight: '800', letterSpacing: -0.2 }}>
+            Cartão de selos
+          </Text>
+        </View>
         {isPro && (
-          <View
-            style={{
-              backgroundColor: COLORS.verdeAgua,
-              paddingHorizontal: 10,
-              paddingVertical: 3,
-              borderRadius: 20,
-            }}
-          >
-            <Text style={{ color: COLORS.noite, fontSize: 11, fontWeight: '700' }}>PRO 1.5×</Text>
+          <View style={{
+            backgroundColor: `${COLORS.verdeAgua}20`,
+            paddingHorizontal: 12, paddingVertical: 5,
+            borderRadius: 100, borderWidth: 1, borderColor: `${COLORS.verdeAgua}40`,
+          }}>
+            <Text style={{ color: COLORS.verdeAgua, fontSize: 11, fontWeight: '700', letterSpacing: 0.5 }}>✦ PRO 1.5×</Text>
           </View>
         )}
       </View>
@@ -44,17 +46,14 @@ export function LoyaltyCard({ stamps, isPro = false }: LoyaltyCardProps) {
             <View
               key={i}
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                backgroundColor: filled ? COLORS.verdeAgua : 'rgba(255,255,255,0.12)',
-                borderWidth: filled ? 0 : 1.5,
-                borderColor: 'rgba(255,255,255,0.25)',
-                alignItems: 'center',
-                justifyContent: 'center',
+                width: 44, height: 44, borderRadius: 22,
+                backgroundColor: filled ? COLORS.verdeAgua : COLORS.surface,
+                borderWidth: 1,
+                borderColor: filled ? 'transparent' : COLORS.border,
+                alignItems: 'center', justifyContent: 'center',
               }}
             >
-              <Text style={{ fontSize: 20, color: filled ? COLORS.noite : 'rgba(255,255,255,0.3)' }}>
+              <Text style={{ fontSize: 18, color: filled ? COLORS.noite : 'rgba(255,255,255,0.2)' }}>
                 ✦
               </Text>
             </View>
@@ -62,11 +61,11 @@ export function LoyaltyCard({ stamps, isPro = false }: LoyaltyCardProps) {
         })}
       </View>
 
-      <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+      <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, lineHeight: 18 }}>
         {displayStamps}/{LOYALTY_STAMPS_REQUIRED} selos •{' '}
         {LOYALTY_STAMPS_REQUIRED - displayStamps > 0
           ? `Faltam ${LOYALTY_STAMPS_REQUIRED - displayStamps} para ganhar uma lavagem grátis`
-          : 'Parabéns! Resgate sua lavagem grátis'}
+          : '🎉 Parabéns! Resgate sua lavagem grátis'}
       </Text>
     </View>
   );

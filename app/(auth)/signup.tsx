@@ -42,65 +42,74 @@ export default function SignupScreen() {
     }
   };
 
+  const fields = [
+    { label: 'Nome completo', value: name, onChange: setName, placeholder: 'Seu nome', keyboard: 'default' as const, capitalize: 'words' as const },
+    { label: 'E-mail', value: email, onChange: setEmail, placeholder: 'seu@email.com', keyboard: 'email-address' as const, capitalize: 'none' as const },
+    { label: 'Senha', value: password, onChange: setPassword, placeholder: '••••••••', keyboard: 'default' as const, capitalize: 'none' as const, secure: true },
+  ];
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.noite }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 24 }}>
-          <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 32 }}>
-            <Text style={{ color: COLORS.chuva, fontSize: 16 }}>← Voltar</Text>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 24 }} showsVerticalScrollIndicator={false}>
+          <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 40, alignSelf: 'flex-start' }}>
+            <View style={{
+              width: 40, height: 40, borderRadius: 20,
+              backgroundColor: COLORS.surface,
+              borderWidth: 1, borderColor: COLORS.border,
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Text style={{ color: COLORS.white, fontSize: 18 }}>←</Text>
+            </View>
           </TouchableOpacity>
 
-          <Text style={{ fontSize: 28, fontWeight: '800', color: COLORS.white, marginBottom: 8 }}>
+          <Text style={{ fontSize: 34, fontWeight: '800', color: COLORS.white, marginBottom: 8, letterSpacing: -0.5 }}>
             Criar conta
           </Text>
-          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, marginBottom: 32 }}>
+          <Text style={{ color: 'rgba(255,255,255,0.45)', fontSize: 16, marginBottom: 40, lineHeight: 24 }}>
             Junte-se ao CleanBy gratuitamente
           </Text>
 
-          {/* Google OAuth */}
           <GoogleButton onPress={handleGoogle} loading={googleLoading} label="Cadastrar com Google" />
 
-          {/* Divider */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 24 }}>
-            <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.12)' }} />
-            <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>ou cadastre com e-mail</Text>
-            <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.12)' }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 28 }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: COLORS.border }} />
+            <Text style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, letterSpacing: 0.5 }}>OU</Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: COLORS.border }} />
           </View>
 
           {error ? (
-            <View style={{ backgroundColor: '#FEE2E2', borderRadius: 10, padding: 12, marginBottom: 16 }}>
-              <Text style={{ color: '#991B1B', fontSize: 14 }}>{error}</Text>
+            <View style={{ backgroundColor: 'rgba(226,75,74,0.12)', borderRadius: 14, padding: 14, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(226,75,74,0.25)' }}>
+              <Text style={{ color: '#FF6B6B', fontSize: 13, textAlign: 'center' }}>{error}</Text>
             </View>
           ) : null}
 
-          <View style={{ gap: 16 }}>
-            {[
-              { label: 'Nome completo', value: name, onChange: setName, placeholder: 'Seu nome', keyboard: 'default' as const, capitalize: 'words' as const },
-              { label: 'E-mail', value: email, onChange: setEmail, placeholder: 'seu@email.com', keyboard: 'email-address' as const, capitalize: 'none' as const },
-              { label: 'Senha', value: password, onChange: setPassword, placeholder: '••••••••', keyboard: 'default' as const, capitalize: 'none' as const, secure: true },
-            ].map((f) => (
+          <View style={{ gap: 14 }}>
+            {fields.map((f) => (
               <View key={f.label}>
-                <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 6 }}>{f.label}</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginBottom: 8, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+                  {f.label}
+                </Text>
                 <TextInput
                   value={f.value}
                   onChangeText={f.onChange}
                   placeholder={f.placeholder}
-                  placeholderTextColor="rgba(255,255,255,0.3)"
+                  placeholderTextColor="rgba(255,255,255,0.2)"
                   keyboardType={f.keyboard}
                   autoCapitalize={f.capitalize}
                   secureTextEntry={f.secure}
                   style={{
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    borderRadius: 12, padding: 16,
+                    backgroundColor: COLORS.surface,
+                    borderRadius: 16, padding: 18,
                     color: COLORS.white, fontSize: 15,
-                    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+                    borderWidth: 1, borderColor: COLORS.border,
                   }}
                 />
               </View>
             ))}
           </View>
 
-          <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, marginTop: 16, lineHeight: 18 }}>
+          <Text style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, marginTop: 18, lineHeight: 18 }}>
             Ao criar conta, você concorda com nossos Termos de Uso e Política de Privacidade.
           </Text>
 
@@ -110,9 +119,9 @@ export default function SignupScreen() {
 
           <TouchableOpacity
             onPress={() => router.push('/(auth)/login')}
-            style={{ marginTop: 24, alignItems: 'center' }}
+            style={{ marginTop: 28, alignItems: 'center' }}
           >
-            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15 }}>
+            <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15 }}>
               Já tem conta?{' '}
               <Text style={{ color: COLORS.chuva, fontWeight: '700' }}>Entrar</Text>
             </Text>

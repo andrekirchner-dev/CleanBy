@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  SafeAreaView, RefreshControl, TextInput,
+  SafeAreaView, RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS } from '../../src/lib/constants';
@@ -42,7 +42,7 @@ export default function HomeScreen() {
   const user = useAuthStore((s) => s.user);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [establishments, setEstablishments] = useState(MOCK_ESTABLISHMENTS);
+  const [establishments] = useState(MOCK_ESTABLISHMENTS);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -57,24 +57,37 @@ export default function HomeScreen() {
   const openNow = filtered.filter((e) => e.is_open);
   const mobileService = filtered.filter((e) => e.has_mobile_service);
 
+  const firstName = user?.name?.split(' ')[0] ?? 'você';
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.offWhite }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.noite }}>
       {/* Header */}
-      <View style={{ backgroundColor: COLORS.noite, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <View>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>Localização atual</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 2 }}>Olá, {firstName} 👋</Text>
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text style={{ color: COLORS.white, fontWeight: '700', fontSize: 15 }}>São Paulo, SP</Text>
-              <Text style={{ color: COLORS.chuva, fontSize: 12 }}>▼</Text>
+              <Text style={{ color: COLORS.white, fontWeight: '700', fontSize: 16 }}>São Paulo, SP</Text>
+              <Text style={{ color: COLORS.chuva, fontSize: 11 }}>▼</Text>
             </TouchableOpacity>
           </View>
-          <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-            <TouchableOpacity onPress={() => router.push('/loja')}>
-              <Text style={{ fontSize: 24 }}>🛒</Text>
+          <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+            <TouchableOpacity
+              onPress={() => router.push('/loja')}
+              style={{
+                width: 40, height: 40, borderRadius: 20,
+                backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
+                alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 18 }}>🛒</Text>
             </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={{ fontSize: 24 }}>🔔</Text>
+            <TouchableOpacity style={{
+              width: 40, height: 40, borderRadius: 20,
+              backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border,
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Text style={{ fontSize: 18 }}>🔔</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -83,13 +96,14 @@ export default function HomeScreen() {
         <TouchableOpacity
           onPress={() => router.push('/(tabs)/buscar')}
           style={{
-            backgroundColor: 'rgba(255,255,255,0.12)',
-            borderRadius: 12, padding: 14,
+            backgroundColor: COLORS.surface,
+            borderRadius: 16, paddingVertical: 16, paddingHorizontal: 18,
             flexDirection: 'row', alignItems: 'center', gap: 10,
+            borderWidth: 1, borderColor: COLORS.border,
           }}
         >
           <Text style={{ fontSize: 16 }}>🔍</Text>
-          <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15 }}>
+          <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 15 }}>
             Buscar serviço ou estabelecimento...
           </Text>
         </TouchableOpacity>
@@ -100,68 +114,82 @@ export default function HomeScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.chuva} />}
       >
         {/* Categories */}
-        <View style={{ paddingTop: 20, paddingBottom: 8 }}>
-          <Text style={{ paddingHorizontal: 20, fontSize: 16, fontWeight: '700', color: COLORS.noite, marginBottom: 12 }}>
-            O que você precisa?
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ paddingHorizontal: 24, fontSize: 13, fontWeight: '700', color: 'rgba(255,255,255,0.4)', marginBottom: 14, letterSpacing: 1, textTransform: 'uppercase' }}>
+            Serviços
           </Text>
           <CategoryScroll selected={selectedCategory} onSelect={setSelectedCategory} />
         </View>
 
         {/* Promotional Banner */}
-        <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
-          <View
-            style={{
-              backgroundColor: COLORS.chuva, borderRadius: 16, padding: 20,
-              flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-            }}
-          >
+        <View style={{ marginHorizontal: 24, marginBottom: 28 }}>
+          <View style={{
+            backgroundColor: COLORS.noiteSurface,
+            borderRadius: 20, padding: 20,
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            borderWidth: 1, borderColor: `${COLORS.chuva}30`,
+            overflow: 'hidden',
+          }}>
+            <View style={{
+              position: 'absolute', right: -20, top: -20,
+              width: 120, height: 120, borderRadius: 60,
+              backgroundColor: `${COLORS.chuva}15`,
+            }} />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: COLORS.white, fontWeight: '800', fontSize: 16, marginBottom: 4 }}>
+              <View style={{
+                backgroundColor: `${COLORS.chuva}20`, borderRadius: 8,
+                paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start', marginBottom: 8,
+              }}>
+                <Text style={{ color: COLORS.chuva, fontSize: 10, fontWeight: '700', letterSpacing: 0.8 }}>OFERTA</Text>
+              </View>
+              <Text style={{ color: COLORS.white, fontWeight: '800', fontSize: 16, marginBottom: 4, letterSpacing: -0.2 }}>
                 Primeira lavagem com 20% off!
               </Text>
-              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13 }}>
-                Use o código CLEAN20 no checkout
+              <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
+                Use o código CLEAN20
               </Text>
             </View>
-            <Text style={{ fontSize: 40 }}>✨</Text>
+            <Text style={{ fontSize: 36 }}>✨</Text>
           </View>
         </View>
 
         {/* Open Now */}
-        <View style={{ marginBottom: 24 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 12 }}>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.noite }}>Abertos agora</Text>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/buscar')}>
-              <Text style={{ color: COLORS.chuva, fontSize: 14 }}>Ver todos</Text>
-            </TouchableOpacity>
+        {openNow.length > 0 && (
+          <View style={{ marginBottom: 28 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 14 }}>
+              <Text style={{ fontSize: 17, fontWeight: '800', color: COLORS.white, letterSpacing: -0.2 }}>Abertos agora</Text>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/buscar')}>
+                <Text style={{ color: COLORS.chuva, fontSize: 13, fontWeight: '600' }}>Ver todos</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, gap: 14 }}>
+              {openNow.map((e) => (
+                <EstablishmentCard key={e.id} establishment={e} style={{ width: 248 }} />
+              ))}
+            </ScrollView>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
-            {openNow.map((e) => (
-              <EstablishmentCard key={e.id} establishment={e} style={{ width: 240 }} />
-            ))}
-          </ScrollView>
-        </View>
+        )}
 
         {/* Mobile Service */}
         {mobileService.length > 0 && (
-          <View style={{ marginBottom: 24 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 12 }}>
-              <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.noite }}>Vão até você 📍</Text>
+          <View style={{ marginBottom: 28 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 14 }}>
+              <Text style={{ fontSize: 17, fontWeight: '800', color: COLORS.white, letterSpacing: -0.2 }}>Vão até você 📍</Text>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, gap: 14 }}>
               {mobileService.map((e) => (
-                <EstablishmentCard key={e.id} establishment={e} style={{ width: 240 }} />
+                <EstablishmentCard key={e.id} establishment={e} style={{ width: 248 }} />
               ))}
             </ScrollView>
           </View>
         )}
 
         {/* Near You */}
-        <View style={{ marginBottom: 40 }}>
-          <Text style={{ paddingHorizontal: 20, fontSize: 16, fontWeight: '700', color: COLORS.noite, marginBottom: 12 }}>
+        <View style={{ marginBottom: 48 }}>
+          <Text style={{ paddingHorizontal: 24, fontSize: 17, fontWeight: '800', color: COLORS.white, marginBottom: 14, letterSpacing: -0.2 }}>
             Próximos de você
           </Text>
-          <View style={{ paddingHorizontal: 20, gap: 12 }}>
+          <View style={{ paddingHorizontal: 24, gap: 14 }}>
             {filtered.map((e) => (
               <EstablishmentCard key={e.id} establishment={e} />
             ))}

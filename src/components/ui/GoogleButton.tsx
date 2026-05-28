@@ -13,18 +13,16 @@ export function GoogleButton({ onPress, loading = false, label = 'Continuar com 
     <TouchableOpacity
       onPress={onPress}
       disabled={loading}
-      activeOpacity={0.85}
+      activeOpacity={0.8}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 12,
+        gap: 10,
         backgroundColor: COLORS.white,
-        borderRadius: 12,
-        paddingVertical: 14,
-        paddingHorizontal: 20,
-        borderWidth: 1.5,
-        borderColor: COLORS.gray200,
+        borderRadius: 100,
+        paddingVertical: 16,
+        paddingHorizontal: 24,
         opacity: loading ? 0.7 : 1,
       }}
     >
@@ -32,14 +30,13 @@ export function GoogleButton({ onPress, loading = false, label = 'Continuar com 
         <ActivityIndicator color={COLORS.gray600} size="small" />
       ) : (
         <>
-          {/* Google G logo SVG-like using text */}
           <View style={{
-            width: 22, height: 22, borderRadius: 11,
+            width: 20, height: 20, borderRadius: 10,
             backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center',
           }}>
-            <Text style={{ fontSize: 16, fontWeight: '800', color: '#4285F4' }}>G</Text>
+            <Text style={{ fontSize: 14, fontWeight: '800', color: '#4285F4' }}>G</Text>
           </View>
-          <Text style={{ color: COLORS.gray800, fontWeight: '700', fontSize: 15 }}>
+          <Text style={{ color: COLORS.gray800, fontWeight: '700', fontSize: 15, letterSpacing: 0.3 }}>
             {label}
           </Text>
         </>

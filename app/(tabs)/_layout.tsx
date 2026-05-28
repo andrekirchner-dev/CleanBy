@@ -4,9 +4,20 @@ import { COLORS } from '../../src/lib/constants';
 
 function TabIcon({ emoji, label, focused }: { emoji: string; label: string; focused: boolean }) {
   return (
-    <View style={{ alignItems: 'center', gap: 2, paddingTop: 6 }}>
-      <Text style={{ fontSize: 20 }}>{emoji}</Text>
-      <Text style={{ fontSize: 10, color: focused ? COLORS.chuva : COLORS.gray400, fontWeight: focused ? '700' : '400' }}>
+    <View style={{ alignItems: 'center', gap: 3, paddingTop: 8 }}>
+      <View style={{
+        width: 44, height: 32, borderRadius: 16,
+        backgroundColor: focused ? `${COLORS.chuva}25` : 'transparent',
+        alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Text style={{ fontSize: 18 }}>{emoji}</Text>
+      </View>
+      <Text style={{
+        fontSize: 10,
+        color: focused ? COLORS.chuva : 'rgba(255,255,255,0.35)',
+        fontWeight: focused ? '700' : '500',
+        letterSpacing: 0.3,
+      }}>
         {label}
       </Text>
     </View>
@@ -19,10 +30,10 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: COLORS.white,
-          borderTopColor: COLORS.gray200,
+          backgroundColor: COLORS.noite,
+          borderTopColor: COLORS.border,
           borderTopWidth: 1,
-          height: 72,
+          height: 76,
           paddingBottom: 8,
         },
         tabBarShowLabel: false,
