@@ -3,7 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import { Platform, View, Text } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { auth } from '../src/lib/firebase';
 import { useAuthStore } from '../src/stores/authStore';
 
@@ -74,13 +74,12 @@ function PhoneShell({ children }: { children: React.ReactNode }) {
             boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
           }} />
 
-          <SafeAreaProvider initialMetrics={{
-            insets: { top: 54, bottom: 24, left: 0, right: 0 },
-            frame: { x: 0, y: 0, width: 393, height: 852 },
-          }}>
-            <View style={{ flex: 1 }}>
-              {children}
-            </View>
+          <SafeAreaProvider>
+            <SafeAreaInsetsContext.Provider value={{ top: 54, bottom: 24, left: 0, right: 0 }}>
+              <View style={{ flex: 1 }}>
+                {children}
+              </View>
+            </SafeAreaInsetsContext.Provider>
           </SafeAreaProvider>
         </View>
 
