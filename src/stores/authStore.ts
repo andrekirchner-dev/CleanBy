@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import { updateUser as updateUserDoc } from '../lib/db';
 import type { User } from '../types';
 import { Platform } from 'react-native';
 
@@ -25,6 +26,8 @@ interface AuthState {
   signInWithGoogle: () => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   setFirebaseUser: (fbUser: FirebaseUser | null) => void;
+  updateUserProfile: (data: Partial<Pick<User, 'name' | 'phone'>>) => Promise<void>;
+  upgradeToPro: () => Promise<void>;
 }
 
 const googleProvider = new GoogleAuthProvider();
@@ -48,7 +51,7 @@ async function upsertUserDoc(fbUser: FirebaseUser) {
   return snap?.data();
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   firebaseUser: null,
   loading: true,
@@ -169,5 +172,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: async () => {
     await firebaseSignOut(auth);
     set({ user: null, firebaseUser: null });
+  },
+
+  updateUserProfile: async (data) => {
+    const { user, firebaseUser } = get();
+    if (!user || !firebaseUser) return;
+    await updateUserDoc(user.id, data);
+    if (data.name) await updateProfile(firebaseUser, { displayName: data.name });
+    set({ user: { ...user, ...data } });
+  },
+
+  upgradeToPro: async () => {
+    const { user } = get();
+    if (!user) return;
+    await updateUserDoc(user.id, { plan: 'pro', pro_pay_on_site_quota: 2 });
+    set({ user: { ...user, plan: 'pro', pro_pay_on_site_quota: 2 } });
   },
 }));

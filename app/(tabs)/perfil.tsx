@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { Pencil, Car, CreditCard, MapPin, Bell, Shield, HelpCircle, FileText, LogOut, ChevronRight } from 'lucide-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useVehicleStore } from '../../src/stores/vehicleStore';
+import { useBookingStore } from '../../src/stores/bookingStore';
 import { COLORS } from '../../src/lib/constants';
 import { LoyaltyCard } from '../../src/components/ui/LoyaltyCard';
 import { ProModal } from '../../src/components/ui/ProModal';
@@ -15,6 +16,9 @@ export default function PerfilScreen() {
   const router = useRouter();
   const { user, signOut } = useAuthStore();
   const { vehicles, fetch: fetchVehicles } = useVehicleStore();
+  const completedBookings = useBookingStore((s) =>
+    s.bookings.filter((b) => b.status === 'concluido').length,
+  );
   const [showProModal, setShowProModal] = useState(false);
   const isPro = user?.plan === 'pro';
   const stamps = user?.loyalty_stamps ?? 0;
@@ -26,23 +30,23 @@ export default function PerfilScreen() {
     {
       title: 'Conta',
       items: [
-        { Icon: Car,        label: 'Meus veículos',          sub: `${vehicles.length} veículo${vehicles.length !== 1 ? 's' : ''}` },
-        { Icon: CreditCard, label: 'Formas de pagamento',    sub: 'Cartão, Pix' },
-        { Icon: MapPin,     label: 'Endereços salvos',       sub: '1 endereço' },
+        { Icon: Car,        label: 'Meus veículos', sub: `${vehicles.length} veículo${vehicles.length !== 1 ? 's' : ''}`, onPress: () => router.push('/perfil/veiculos') },
+        { Icon: CreditCard, label: 'Formas de pagamento', sub: 'Cartão, Pix', onPress: undefined },
+        { Icon: MapPin,     label: 'Endereços salvos', sub: '1 endereço', onPress: undefined },
       ],
     },
     {
       title: 'Preferências',
       items: [
-        { Icon: Bell,   label: 'Notificações',            sub: 'Ativadas' },
-        { Icon: Shield, label: 'Privacidade e segurança', sub: '' },
+        { Icon: Bell,   label: 'Notificações', sub: 'Ativadas', onPress: undefined },
+        { Icon: Shield, label: 'Privacidade e segurança', sub: '', onPress: undefined },
       ],
     },
     {
       title: 'Suporte',
       items: [
-        { Icon: HelpCircle, label: 'Central de ajuda', sub: '' },
-        { Icon: FileText,   label: 'Termos de uso',    sub: '' },
+        { Icon: HelpCircle, label: 'Central de ajuda', sub: '', onPress: undefined },
+        { Icon: FileText,   label: 'Termos de uso', sub: '', onPress: undefined },
       ],
     },
   ];
@@ -95,12 +99,15 @@ export default function PerfilScreen() {
                 </View>
               </View>
 
-              <TouchableOpacity style={{
-                width: 40, height: 40, borderRadius: 20,
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
-                alignItems: 'center', justifyContent: 'center',
-              }}>
+              <TouchableOpacity
+                onPress={() => router.push('/perfil/editar')}
+                style={{
+                  width: 40, height: 40, borderRadius: 20,
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+                  alignItems: 'center', justifyContent: 'center',
+                }}
+              >
                 <Pencil size={15} color="rgba(255,255,255,0.7)" strokeWidth={2} />
               </TouchableOpacity>
             </View>
@@ -115,7 +122,7 @@ export default function PerfilScreen() {
               {[
                 { value: `${stamps}`, label: 'Selos' },
                 { value: `${vehicles.length}`, label: 'Veículos' },
-                { value: '—', label: 'Serviços' },
+                { value: `${completedBookings}`, label: 'Serviços' },
               ].map((stat, i) => (
                 <View key={i} style={{ flex: 1, alignItems: 'center', borderRightWidth: i < 2 ? 1 : 0, borderRightColor: 'rgba(255,255,255,0.07)' }}>
                   <Text style={{ color: COLORS.white, fontSize: 22, fontWeight: '800', letterSpacing: -0.5 }}>{stat.value}</Text>
@@ -191,12 +198,13 @@ export default function PerfilScreen() {
                   {section.items.map((item, i) => (
                     <TouchableOpacity
                       key={i}
+                      onPress={item.onPress}
                       style={{
                         flexDirection: 'row', alignItems: 'center', padding: 16,
                         borderBottomWidth: i < section.items.length - 1 ? 1 : 0,
                         borderBottomColor: COLORS.border,
                       }}
-                      activeOpacity={0.7}
+                      activeOpacity={item.onPress ? 0.7 : 1}
                     >
                       <View style={{
                         width: 38, height: 38, borderRadius: 12,

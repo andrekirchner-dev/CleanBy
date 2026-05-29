@@ -3,7 +3,7 @@ import {
   query, where, orderBy, limit,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Vehicle, Establishment, Service, Booking, Review, BookingStatus } from '../types';
+import type { Vehicle, Establishment, Service, Booking, Review, BookingStatus, User, Product } from '../types';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -148,4 +148,20 @@ export async function fetchReviews(establishmentId: string): Promise<Review[]> {
 export async function createReview(data: Omit<Review, 'id'>): Promise<Review> {
   const ref = await addDoc(collection(db, 'reviews'), data);
   return { id: ref.id, ...data };
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+
+export async function updateUser(userId: string, data: Partial<Omit<User, 'id'>>): Promise<void> {
+  await updateDoc(doc(db, 'users', userId), data as Record<string, unknown>);
+}
+
+// ── Products ──────────────────────────────────────────────────────────────────
+
+export async function fetchProducts(category?: string): Promise<Product[]> {
+  const q = category
+    ? query(collection(db, 'products'), where('category', '==', category), orderBy('name'))
+    : query(collection(db, 'products'), orderBy('name'));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Product));
 }

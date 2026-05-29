@@ -142,6 +142,8 @@ export default function RootLayout() {
         <Stack.Screen name="estabelecimento/[id]" options={{ presentation: 'card' }} />
         <Stack.Screen name="agendamento/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="avaliacao/[bookingId]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="perfil/veiculos" options={{ presentation: 'card' }} />
+        <Stack.Screen name="perfil/editar" options={{ presentation: 'card' }} />
         <Stack.Screen name="loja/index" options={{ presentation: 'card' }} />
         <Stack.Screen name="pro/index" options={{ presentation: 'modal' }} />
       </Stack>
