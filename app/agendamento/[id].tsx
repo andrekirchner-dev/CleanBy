@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  ActivityIndicator, Alert,
+  ActivityIndicator, Alert, Modal, TextInput, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -34,7 +34,7 @@ export default function AgendamentoScreen() {
   const router = useRouter();
   const { draft, setVehicle, setDate, setTime, setPaymentType, resetDraft, confirm } = useBookingStore();
   const user = useAuthStore((s) => s.user);
-  const { vehicles, fetch: fetchVehicles } = useVehicleStore();
+  const { vehicles, fetch: fetchVehicles, add: vehicles_add } = useVehicleStore();
   const isPro = user?.plan === 'pro';
   const hasProQuota = (user?.pro_pay_on_site_quota ?? 0) > 0;
 
@@ -42,6 +42,34 @@ export default function AgendamentoScreen() {
   const [showProModal, setShowProModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+
+  const [showVehicleModal, setShowVehicleModal] = useState(false);
+  const [vPlate, setVPlate] = useState('');
+  const [vModel, setVModel] = useState('');
+  const [vColor, setVColor] = useState('');
+  const [vYear, setVYear] = useState('');
+  const [vSaving, setVSaving] = useState(false);
+
+  const handleAddVehicle = async () => {
+    if (!user || !vPlate.trim() || !vModel.trim() || !vColor.trim()) return;
+    setVSaving(true);
+    try {
+      const newVehicle = await vehicles_add({
+        user_id: user.id,
+        plate: vPlate.trim().toUpperCase(),
+        model: vModel.trim(),
+        color: vColor.trim(),
+        year: vYear ? parseInt(vYear, 10) : undefined,
+      });
+      setVehicle(newVehicle);
+      setShowVehicleModal(false);
+      setVPlate(''); setVModel(''); setVColor(''); setVYear('');
+    } catch {
+      Alert.alert('Erro', 'Não foi possível adicionar o veículo.');
+    } finally {
+      setVSaving(false);
+    }
+  };
 
   const dates = generateDates();
 
@@ -205,11 +233,14 @@ export default function AgendamentoScreen() {
                   )}
                 </TouchableOpacity>
               ))}
-              <TouchableOpacity style={{
-                flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16,
-                backgroundColor: COLORS.noiteSurface, borderRadius: 14,
-                borderWidth: 1, borderColor: COLORS.border, borderStyle: 'dashed',
-              }}>
+              <TouchableOpacity
+                onPress={() => setShowVehicleModal(true)}
+                style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16,
+                  backgroundColor: COLORS.noiteSurface, borderRadius: 14,
+                  borderWidth: 1, borderColor: COLORS.border, borderStyle: 'dashed',
+                }}
+              >
                 <Plus size={18} color={COLORS.chuva} strokeWidth={2} />
                 <Text style={{ color: COLORS.chuva, fontWeight: '700' }}>Adicionar novo veículo</Text>
               </TouchableOpacity>
@@ -358,6 +389,65 @@ export default function AgendamentoScreen() {
       </SafeAreaView>
 
       <ProModal visible={showProModal} onClose={() => setShowProModal(false)} onSubscribe={() => { setShowProModal(false); router.push('/pro'); }} />
+
+      {/* Add vehicle modal */}
+      <Modal visible={showVehicleModal} animationType="slide" transparent presentationStyle="overFullScreen">
+        <KeyboardAvoidingView
+          style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <View style={{
+            backgroundColor: '#0D1829', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+            padding: 24, paddingBottom: 36, gap: 16,
+            borderTopWidth: 1, borderColor: COLORS.border,
+          }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <Text style={{ color: COLORS.white, fontSize: 18, fontWeight: '800' }}>Novo veículo</Text>
+              <TouchableOpacity onPress={() => setShowVehicleModal(false)}>
+                <X size={20} color="rgba(255,255,255,0.4)" strokeWidth={2} />
+              </TouchableOpacity>
+            </View>
+
+            {[
+              { label: 'Modelo *', value: vModel, set: setVModel, placeholder: 'Ex: Honda Civic' },
+              { label: 'Placa *', value: vPlate, set: setVPlate, placeholder: 'Ex: ABC-1234', upper: true },
+              { label: 'Cor *', value: vColor, set: setVColor, placeholder: 'Ex: Prata' },
+              { label: 'Ano', value: vYear, set: setVYear, placeholder: 'Ex: 2022', numeric: true },
+            ].map(({ label, value, set, placeholder, upper, numeric }) => (
+              <View key={label}>
+                <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '600', marginBottom: 6 }}>{label}</Text>
+                <TextInput
+                  value={value}
+                  onChangeText={(t) => set(upper ? t.toUpperCase() : t)}
+                  placeholder={placeholder}
+                  placeholderTextColor="rgba(255,255,255,0.2)"
+                  keyboardType={numeric ? 'numeric' : 'default'}
+                  style={{
+                    backgroundColor: COLORS.surface, borderRadius: 12,
+                    borderWidth: 1, borderColor: COLORS.border,
+                    color: COLORS.white, fontSize: 15, padding: 14,
+                  }}
+                />
+              </View>
+            ))}
+
+            <TouchableOpacity
+              onPress={handleAddVehicle}
+              disabled={!vPlate.trim() || !vModel.trim() || !vColor.trim() || vSaving}
+              style={{
+                backgroundColor: (!vPlate.trim() || !vModel.trim() || !vColor.trim()) ? 'rgba(26,122,200,0.4)' : COLORS.chuva,
+                borderRadius: 100, paddingVertical: 15, alignItems: 'center', marginTop: 4,
+              }}
+              activeOpacity={0.8}
+            >
+              {vSaving
+                ? <ActivityIndicator color={COLORS.white} />
+                : <Text style={{ color: COLORS.white, fontWeight: '800', fontSize: 15 }}>Adicionar veículo</Text>
+              }
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }

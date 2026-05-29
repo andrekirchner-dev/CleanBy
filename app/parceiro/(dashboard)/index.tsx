@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { TrendingUp, Star, CalendarCheck, ChevronRight, LogOut, AlertTriangle } from 'lucide-react-native';
@@ -12,10 +12,15 @@ const TODAY = new Date().toISOString().split('T')[0];
 export default function ParceiroDashboardScreen() {
   const router = useRouter();
   const { user, signOut } = useAuthStore();
-  const { establishment, bookings, loading, fetchEstablishment } = usePartnerStore();
+  const { establishment, bookings, loading, fetchEstablishment, subscribeBookings } = usePartnerStore();
 
-  const load = () => { if (user) fetchEstablishment(user.id); };
-  useEffect(() => { load(); }, [user?.id]);
+  useEffect(() => { if (user) fetchEstablishment(user.id); }, [user?.id]);
+
+  useEffect(() => {
+    if (!establishment) return;
+    const unsub = subscribeBookings();
+    return unsub ?? undefined;
+  }, [establishment?.id]);
 
   const todayBookings = bookings.filter((b) => b.date === TODAY && b.status !== 'cancelado');
   const pending = bookings.filter((b) => b.status === 'aguardando_confirmacao');
@@ -42,7 +47,7 @@ export default function ParceiroDashboardScreen() {
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={loading} onRefresh={load} tintColor={COLORS.verdeAgua} />}
+          refreshControl={undefined}
         >
           {/* Header */}
           <View style={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 24 }}>

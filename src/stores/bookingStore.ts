@@ -1,6 +1,8 @@
 import { create } from 'zustand';
-import { createBooking, fetchUserBookings } from '../lib/db';
-import type { Service, Vehicle, Establishment, Booking } from '../types';
+import { onSnapshot, query, collection, where, orderBy } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { createBooking, updateBookingStatus } from '../lib/db';
+import type { Service, Vehicle, Establishment, Booking, BookingStatus } from '../types';
 
 interface BookingDraft {
   service: Service | null;
@@ -22,7 +24,8 @@ interface BookingState {
   setPaymentType: (type: 'reserva' | 'completo' | 'no_local') => void;
   resetDraft: () => void;
   confirm: (userId: string) => Promise<Booking>;
-  fetchBookings: (userId: string) => Promise<void>;
+  subscribeBookings: (userId: string) => () => void;
+  cancelBooking: (bookingId: string) => Promise<void>;
 }
 
 const emptyDraft: BookingDraft = {
@@ -82,14 +85,28 @@ export const useBookingStore = create<BookingState>((set, get) => ({
       created_at: new Date().toISOString(),
     };
 
-    const booking = await createBooking(data);
-    set((s) => ({ bookings: [booking, ...s.bookings] }));
-    return booking;
+    return createBooking(data);
   },
 
-  fetchBookings: async (userId) => {
+  // Returns unsubscribe fn — caller must call it on unmount
+  subscribeBookings: (userId) => {
     set({ bookingsLoading: true });
-    const bookings = await fetchUserBookings(userId).catch(() => [] as Booking[]);
-    set({ bookings, bookingsLoading: false });
+    const q = query(
+      collection(db, 'bookings'),
+      where('user_id', '==', userId),
+      orderBy('created_at', 'desc'),
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const bookings = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Booking));
+      set({ bookings, bookingsLoading: false });
+    }, () => { set({ bookingsLoading: false }); });
+    return unsub;
+  },
+
+  cancelBooking: async (bookingId) => {
+    await updateBookingStatus(bookingId, 'cancelado');
+    set((s) => ({
+      bookings: s.bookings.map((b) => b.id === bookingId ? { ...b, status: 'cancelado' } : b),
+    }));
   },
 }));

@@ -1,8 +1,10 @@
 import { create } from 'zustand';
+import { onSnapshot, query, collection, where, orderBy } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import {
   fetchPartnerEstablishment, createEstablishment, updateEstablishment,
   fetchServices, addService, updateService, removeService,
-  fetchEstablishmentBookings, updateBookingStatus,
+  updateBookingStatus,
 } from '../lib/db';
 import type { Establishment, Service, Booking, BookingStatus } from '../types';
 
@@ -21,7 +23,8 @@ interface PartnerState {
   editService: (serviceId: string, data: Partial<Omit<Service, 'id'>>) => Promise<void>;
   deleteService: (serviceId: string) => Promise<void>;
 
-  fetchBookings: () => Promise<void>;
+  // Returns unsubscribe fn
+  subscribeBookings: () => (() => void) | undefined;
   confirmBooking: (bookingId: string) => Promise<void>;
   rejectBooking: (bookingId: string) => Promise<void>;
   completeBooking: (bookingId: string) => Promise<void>;
@@ -37,9 +40,7 @@ export const usePartnerStore = create<PartnerState>((set, get) => ({
     set({ loading: true });
     const establishment = await fetchPartnerEstablishment(partnerId).catch(() => null);
     set({ establishment, loading: false });
-    if (establishment) {
-      await Promise.all([get().fetchServices(), get().fetchBookings()]);
-    }
+    if (establishment) await get().fetchServices();
   },
 
   createEstablishment: async (data) => {
@@ -52,7 +53,7 @@ export const usePartnerStore = create<PartnerState>((set, get) => ({
     const { establishment } = get();
     if (!establishment) return;
     await updateEstablishment(establishment.id, data);
-    set({ establishment: { ...establishment, ...data, is_open: establishment.is_open } });
+    set({ establishment: { ...establishment, ...data } });
   },
 
   fetchServices: async () => {
@@ -80,11 +81,18 @@ export const usePartnerStore = create<PartnerState>((set, get) => ({
     set((s) => ({ services: s.services.filter((sv) => sv.id !== serviceId) }));
   },
 
-  fetchBookings: async () => {
+  subscribeBookings: () => {
     const { establishment } = get();
-    if (!establishment) return;
-    const bookings = await fetchEstablishmentBookings(establishment.id).catch(() => [] as Booking[]);
-    set({ bookings });
+    if (!establishment) return undefined;
+    const q = query(
+      collection(db, 'bookings'),
+      where('establishment_id', '==', establishment.id),
+      orderBy('date', 'asc'),
+    );
+    return onSnapshot(q, (snap) => {
+      const bookings = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Booking));
+      set({ bookings });
+    }, () => {});
   },
 
   confirmBooking: async (bookingId) => {

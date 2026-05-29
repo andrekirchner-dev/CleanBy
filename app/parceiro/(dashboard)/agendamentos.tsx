@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, RefreshControl, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar, Car, Check, X, Clock } from 'lucide-react-native';
 import { usePartnerStore } from '../../../src/stores/partnerStore';
@@ -11,10 +11,14 @@ const TODAY = new Date().toISOString().split('T')[0];
 type Tab = 'pendentes' | 'hoje' | 'historico';
 
 export default function ParceiroAgendamentosScreen() {
-  const { bookings, loading, confirmBooking, rejectBooking, completeBooking, fetchBookings, establishment } = usePartnerStore();
+  const { bookings, loading, confirmBooking, rejectBooking, completeBooking, subscribeBookings, establishment } = usePartnerStore();
   const [tab, setTab] = useState<Tab>('pendentes');
 
-  const load = () => { if (establishment) fetchBookings(); };
+  useEffect(() => {
+    if (!establishment) return;
+    const unsub = subscribeBookings();
+    return unsub ?? undefined;
+  }, [establishment?.id]);
 
   const pending  = bookings.filter((b) => b.status === 'aguardando_confirmacao');
   const today    = bookings.filter((b) => b.date === TODAY && b.status !== 'cancelado' && b.status !== 'aguardando_confirmacao');
@@ -100,7 +104,6 @@ export default function ParceiroAgendamentosScreen() {
           <ScrollView
             contentContainerStyle={{ padding: 24, paddingTop: 8, gap: 12 }}
             showsVerticalScrollIndicator={false}
-            refreshControl={<RefreshControl refreshing={loading} onRefresh={load} tintColor={COLORS.verdeAgua} />}
           >
             {list.length === 0 ? (
               <View style={{ alignItems: 'center', marginTop: 60, gap: 12 }}>

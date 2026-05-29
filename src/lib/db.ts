@@ -144,3 +144,8 @@ export async function fetchReviews(establishmentId: string): Promise<Review[]> {
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Review));
 }
+
+export async function createReview(data: Omit<Review, 'id'>): Promise<Review> {
+  const ref = await addDoc(collection(db, 'reviews'), data);
+  return { id: ref.id, ...data };
+}

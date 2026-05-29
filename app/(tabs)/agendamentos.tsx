@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Calendar, Car, Star } from 'lucide-react-native';
+import { Calendar, Car, Star, X } from 'lucide-react-native';
 import { COLORS, STATUS_LABELS, STATUS_COLORS } from '../../src/lib/constants';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useBookingStore } from '../../src/stores/bookingStore';
@@ -12,12 +12,14 @@ type Tab = 'proximos' | 'historico';
 export default function AgendamentosScreen() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const { bookings, bookingsLoading, fetchBookings } = useBookingStore();
+  const { bookings, bookingsLoading, subscribeBookings, cancelBooking } = useBookingStore();
   const [tab, setTab] = useState<Tab>('proximos');
 
-  const load = async () => { if (user) await fetchBookings(user.id); };
-
-  useEffect(() => { load(); }, [user?.id]);
+  useEffect(() => {
+    if (!user) return;
+    const unsub = subscribeBookings(user.id);
+    return unsub;
+  }, [user?.id]);
 
   const upcoming = bookings.filter((b) => ['aguardando_confirmacao', 'confirmado', 'em_andamento'].includes(b.status));
   const history = bookings.filter((b) => ['concluido', 'cancelado'].includes(b.status));
@@ -73,7 +75,6 @@ export default function AgendamentosScreen() {
           <ScrollView
             contentContainerStyle={{ padding: 24, paddingTop: 20, gap: 14 }}
             showsVerticalScrollIndicator={false}
-            refreshControl={<RefreshControl refreshing={bookingsLoading} onRefresh={load} tintColor={COLORS.chuva} />}
           >
             {list.length === 0 ? (
               <View style={{ alignItems: 'center', marginTop: 60, gap: 16 }}>
@@ -168,6 +169,29 @@ export default function AgendamentosScreen() {
                       </View>
 
                       <View style={{ height: 1, backgroundColor: COLORS.border, marginBottom: 14 }} />
+
+                      {/* Cancel action for cancellable bookings */}
+                      {(booking.status === 'aguardando_confirmacao' || booking.status === 'confirmado') && (
+                        <TouchableOpacity
+                          onPress={() => Alert.alert(
+                            'Cancelar agendamento',
+                            'Tem certeza que deseja cancelar? Esta ação não pode ser desfeita.',
+                            [
+                              { text: 'Voltar', style: 'cancel' },
+                              { text: 'Cancelar agendamento', style: 'destructive', onPress: () => cancelBooking(booking.id) },
+                            ],
+                          )}
+                          style={{
+                            marginBottom: 12, paddingVertical: 11, borderRadius: 12,
+                            backgroundColor: 'rgba(226,75,74,0.08)', borderWidth: 1, borderColor: 'rgba(226,75,74,0.2)',
+                            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          }}
+                        >
+                          <X size={13} color={COLORS.error} strokeWidth={2.5} />
+                          <Text style={{ color: COLORS.error, fontWeight: '700', fontSize: 13 }}>Cancelar agendamento</Text>
+                        </TouchableOpacity>
+                      )}
+
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         <View>
                           <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginBottom: 2 }}>Total</Text>
@@ -177,13 +201,16 @@ export default function AgendamentosScreen() {
                         </View>
                         <View style={{ flexDirection: 'row', gap: 8 }}>
                           {booking.status === 'concluido' && (
-                            <TouchableOpacity style={{
-                              backgroundColor: COLORS.surface, borderRadius: 100,
-                              paddingHorizontal: 14, paddingVertical: 10,
-                              borderWidth: 1, borderColor: COLORS.border,
-                              flexDirection: 'row', alignItems: 'center', gap: 6,
-                            }}>
-                              <Star size={13} color="rgba(255,255,255,0.6)" strokeWidth={1.8} />
+                            <TouchableOpacity
+                              onPress={() => router.push(`/avaliacao/${booking.id}`)}
+                              style={{
+                                backgroundColor: COLORS.surface, borderRadius: 100,
+                                paddingHorizontal: 14, paddingVertical: 10,
+                                borderWidth: 1, borderColor: COLORS.border,
+                                flexDirection: 'row', alignItems: 'center', gap: 6,
+                              }}
+                            >
+                              <Star size={13} color={COLORS.warning} strokeWidth={1.8} />
                               <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: 13 }}>Avaliar</Text>
                             </TouchableOpacity>
                           )}

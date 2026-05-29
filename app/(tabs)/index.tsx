@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { ShoppingBag, Bell, ChevronDown, Search, Gift } from 'lucide-react-native';
+import * as Location from 'expo-location';
 import { COLORS } from '../../src/lib/constants';
 import { EstablishmentCard } from '../../src/components/home/EstablishmentCard';
 import { CategoryScroll } from '../../src/components/home/CategoryScroll';
@@ -18,7 +19,21 @@ export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          fetch(loc.coords.latitude, loc.coords.longitude);
+        } else {
+          fetch();
+        }
+      } catch {
+        fetch();
+      }
+    })();
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
