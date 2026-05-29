@@ -9,6 +9,7 @@ import { ArrowLeft, X, Car, Plus, CheckCircle } from 'lucide-react-native';
 import { useBookingStore } from '../../src/stores/bookingStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useVehicleStore } from '../../src/stores/vehicleStore';
+import { fetchBookedTimes } from '../../src/lib/db';
 import { COLORS } from '../../src/lib/constants';
 import { BookingStepIndicator } from '../../src/components/agendamento/BookingStepIndicator';
 import { Button } from '../../src/components/ui/Button';
@@ -27,8 +28,24 @@ const generateDates = () => {
   return dates;
 };
 
-const AVAILABLE_TIMES = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
-const SPECIAL_TIMES = ['09:00', '14:00'];
+const DAY_KEYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+
+function generateSlots(
+  openingHours: Record<string, { open: string; close: string }>,
+  dateStr: string,
+  intervalMin = 60,
+): string[] {
+  const dayKey = DAY_KEYS[new Date(dateStr + 'T12:00:00').getDay()];
+  const day = openingHours[dayKey];
+  if (!day) return [];
+  const [oh, om] = day.open.split(':').map(Number);
+  const [ch, cm] = day.close.split(':').map(Number);
+  const slots: string[] = [];
+  for (let t = oh * 60 + om; t + intervalMin <= ch * 60 + cm; t += intervalMin) {
+    slots.push(`${Math.floor(t / 60).toString().padStart(2, '0')}:${(t % 60).toString().padStart(2, '0')}`);
+  }
+  return slots;
+}
 
 export default function AgendamentoScreen() {
   const router = useRouter();
@@ -42,6 +59,10 @@ export default function AgendamentoScreen() {
   const [showProModal, setShowProModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+
+  const [slots, setSlots] = useState<string[]>([]);
+  const [bookedTimes, setBookedTimes] = useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   const [showVehicleModal, setShowVehicleModal] = useState(false);
   const [vPlate, setVPlate] = useState('');
@@ -74,6 +95,19 @@ export default function AgendamentoScreen() {
   const dates = generateDates();
 
   useEffect(() => { if (user) fetchVehicles(user.id); }, [user?.id]);
+
+  useEffect(() => {
+    if (!draft.date || !draft.establishment) return;
+    const interval = draft.service ? Math.max(30, Math.ceil(draft.service.duration_min / 30) * 30) : 60;
+    const generated = generateSlots(draft.establishment.opening_hours, draft.date, interval);
+    setSlots(generated);
+    setTime('');
+    setSlotsLoading(true);
+    fetchBookedTimes(draft.establishment.id, draft.date)
+      .then(setBookedTimes)
+      .catch(() => setBookedTimes([]))
+      .finally(() => setSlotsLoading(false));
+  }, [draft.date, draft.establishment?.id]);
 
   const canNext = () => {
     if (step === 1) return !!draft.vehicle;
@@ -282,41 +316,53 @@ export default function AgendamentoScreen() {
           {step === 3 && (
             <View style={{ gap: 12 }}>
               <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.white, marginBottom: 4, letterSpacing: -0.3 }}>Qual horário?</Text>
-              {!isPro && (
-                <TouchableOpacity onPress={() => setShowProModal(true)} style={{
-                  backgroundColor: COLORS.noiteSurface, borderRadius: 12, padding: 12,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                  borderWidth: 1, borderColor: 'rgba(0,201,160,0.2)',
+
+              {slotsLoading ? (
+                <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+                  <ActivityIndicator color={COLORS.chuva} />
+                  <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, marginTop: 10 }}>Verificando disponibilidade...</Text>
+                </View>
+              ) : slots.length === 0 ? (
+                <View style={{
+                  backgroundColor: COLORS.noiteSurface, borderRadius: 14, padding: 24,
+                  alignItems: 'center', borderWidth: 1, borderColor: COLORS.border,
                 }}>
-                  <Text style={{ color: COLORS.verdeAgua, fontSize: 13 }}>✦ Horários exclusivos PRO disponíveis</Text>
-                  <Text style={{ color: COLORS.verdeAgua, fontWeight: '700' }}>Ver →</Text>
-                </TouchableOpacity>
+                  <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14, textAlign: 'center' }}>
+                    Nenhum horário disponível neste dia.{'\n'}Selecione outra data.
+                  </Text>
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+                  {slots.map((t) => {
+                    const booked = bookedTimes.includes(t);
+                    const selected = draft.time === t;
+                    return (
+                      <TouchableOpacity
+                        key={t}
+                        onPress={() => !booked && setTime(t)}
+                        disabled={booked}
+                        style={{
+                          paddingHorizontal: 18, paddingVertical: 14, borderRadius: 12,
+                          backgroundColor: selected ? COLORS.chuva : booked ? 'rgba(255,255,255,0.03)' : COLORS.noiteSurface,
+                          borderWidth: 1.5,
+                          borderColor: selected ? COLORS.chuva : booked ? 'rgba(255,255,255,0.06)' : COLORS.border,
+                        }}
+                      >
+                        <Text style={{
+                          fontWeight: '700', fontSize: 15,
+                          color: selected ? COLORS.white : booked ? 'rgba(255,255,255,0.2)' : COLORS.white,
+                          textDecorationLine: booked ? 'line-through' : 'none',
+                        }}>{t}</Text>
+                        {booked && (
+                          <Text style={{ color: 'rgba(255,255,255,0.2)', fontSize: 9, marginTop: 2, textAlign: 'center' }}>
+                            Ocupado
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               )}
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-                {AVAILABLE_TIMES.map((t) => {
-                  const isSpecial = SPECIAL_TIMES.includes(t);
-                  const selected = draft.time === t;
-                  const locked = isSpecial && !isPro;
-                  return (
-                    <TouchableOpacity
-                      key={t}
-                      onPress={() => locked ? setShowProModal(true) : setTime(t)}
-                      style={{
-                        paddingHorizontal: 18, paddingVertical: 14, borderRadius: 12,
-                        backgroundColor: selected ? COLORS.chuva : locked ? 'rgba(255,255,255,0.04)' : COLORS.noiteSurface,
-                        borderWidth: 1.5, borderColor: selected ? COLORS.chuva : isSpecial && isPro ? COLORS.verdeAgua : COLORS.border,
-                        flexDirection: 'row', alignItems: 'center', gap: 6,
-                      }}
-                    >
-                      {isSpecial && <Text style={{ color: isPro ? COLORS.verdeAgua : 'rgba(255,255,255,0.2)', fontSize: 12 }}>✦</Text>}
-                      <Text style={{
-                        fontWeight: '700', fontSize: 15,
-                        color: selected ? COLORS.white : locked ? 'rgba(255,255,255,0.25)' : COLORS.white,
-                      }}>{t}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
             </View>
           )}
 

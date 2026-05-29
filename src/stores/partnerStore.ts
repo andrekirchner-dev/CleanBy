@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import {
   fetchPartnerEstablishment, createEstablishment, updateEstablishment,
   fetchServices, addService, updateService, removeService,
-  updateBookingStatus,
+  updateBookingStatus, incrementLoyaltyStamps,
 } from '../lib/db';
 import type { Establishment, Service, Booking, BookingStatus } from '../types';
 
@@ -111,6 +111,10 @@ export const usePartnerStore = create<PartnerState>((set, get) => ({
 
   completeBooking: async (bookingId) => {
     await updateBookingStatus(bookingId, 'concluido');
+    const booking = get().bookings.find((b) => b.id === bookingId);
+    if (booking?.user_id) {
+      await incrementLoyaltyStamps(booking.user_id, 1).catch(() => {});
+    }
     set((s) => ({
       bookings: s.bookings.map((b) => b.id === bookingId ? { ...b, status: 'concluido' } : b),
     }));

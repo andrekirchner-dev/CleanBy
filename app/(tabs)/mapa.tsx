@@ -1,33 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
-import MapView, { Marker } from 'react-native-maps';
-import { Navigation, X, ChevronRight } from 'lucide-react-native';
+import MapView, { Marker, type Region } from 'react-native-maps';
+import { Navigation, X, ChevronRight, Locate } from 'lucide-react-native';
+import * as Location from 'expo-location';
 import { COLORS } from '../../src/lib/constants';
 import { StarRating } from '../../src/components/ui/StarRating';
 import { useEstablishmentStore } from '../../src/stores/establishmentStore';
 import type { Establishment } from '../../src/types';
 
+const DEFAULT_REGION: Region = { latitude: -23.55, longitude: -46.64, latitudeDelta: 0.05, longitudeDelta: 0.05 };
+
 export default function MapaScreen() {
   const router = useRouter();
-  const { establishments, loading, fetch } = useEstablishmentStore();
+  const { establishments, fetch } = useEstablishmentStore();
   const [selected, setSelected] = useState<Establishment | null>(null);
   const [onlyMobile, setOnlyMobile] = useState(false);
+  const [region, setRegion] = useState<Region>(DEFAULT_REGION);
+  const mapRef = useRef<MapView>(null);
 
-  useEffect(() => { if (establishments.length === 0) fetch(); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          const userRegion: Region = {
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+            latitudeDelta: 0.04,
+            longitudeDelta: 0.04,
+          };
+          setRegion(userRegion);
+          fetch(loc.coords.latitude, loc.coords.longitude);
+        } else {
+          fetch();
+        }
+      } catch {
+        fetch();
+      }
+    })();
+  }, []);
 
   const filtered = onlyMobile ? establishments.filter((e) => e.has_mobile_service) : establishments;
+
+  const centerOnUser = async () => {
+    try {
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const r: Region = { latitude: loc.coords.latitude, longitude: loc.coords.longitude, latitudeDelta: 0.04, longitudeDelta: 0.04 };
+      setRegion(r);
+      mapRef.current?.animateToRegion(r, 600);
+    } catch {}
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <MapView
+        ref={mapRef}
         style={{ flex: 1 }}
-        initialRegion={{
-          latitude: -23.55,
-          longitude: -46.64,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
+        region={region}
+        onRegionChangeComplete={setRegion}
         showsUserLocation
         showsMyLocationButton={false}
       >
@@ -57,6 +89,17 @@ export default function MapaScreen() {
       {/* Header overlay */}
       <SafeAreaView style={{ position: 'absolute', top: 0, left: 0, right: 0 }} pointerEvents="box-none">
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', padding: 16, gap: 10 }}>
+          <TouchableOpacity
+            onPress={centerOnUser}
+            style={{
+              backgroundColor: COLORS.white, width: 40, height: 40, borderRadius: 20,
+              shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15, shadowRadius: 4, elevation: 4,
+              alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Locate size={18} color={COLORS.noite} strokeWidth={2} />
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setOnlyMobile(!onlyMobile)}
             style={{

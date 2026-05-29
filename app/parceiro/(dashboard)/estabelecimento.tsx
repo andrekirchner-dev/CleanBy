@@ -4,7 +4,8 @@ import {
   TextInput, Switch, Alert, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Building2, MapPin, Phone, Clock, Navigation, Save } from 'lucide-react-native';
+import { Building2, MapPin, Phone, Clock, Navigation, Save, Locate } from 'lucide-react-native';
+import * as Location from 'expo-location';
 import { usePartnerStore } from '../../../src/stores/partnerStore';
 import { COLORS } from '../../../src/lib/constants';
 
@@ -26,6 +27,8 @@ export default function ParceiroEstabelecimentoScreen() {
   const [description, setDescription] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
   const [hasMobile, setHasMobile] = useState(false);
   const [mobileRadius, setMobileRadius] = useState('');
   const [hours, setHours] = useState<Record<string, { open: string; close: string; active: boolean }>>({});
@@ -36,6 +39,8 @@ export default function ParceiroEstabelecimentoScreen() {
     setDescription(establishment.description ?? '');
     setAddress(establishment.address ?? '');
     setPhone((establishment as any).phone ?? '');
+    setLatitude(establishment.latitude?.toString() ?? '');
+    setLongitude(establishment.longitude?.toString() ?? '');
     setHasMobile(establishment.has_mobile_service);
     setMobileRadius(establishment.mobile_radius_km?.toString() ?? '');
 
@@ -58,6 +63,9 @@ export default function ParceiroEstabelecimentoScreen() {
       if (val.active) opening_hours[key] = { open: val.open, close: val.close };
     });
 
+    const lat = parseFloat(latitude);
+    const lon = parseFloat(longitude);
+
     await updateEstablishment({
       name: name.trim(),
       description: description.trim() || undefined,
@@ -66,10 +74,24 @@ export default function ParceiroEstabelecimentoScreen() {
       mobile_radius_km: hasMobile && mobileRadius ? parseInt(mobileRadius) : undefined,
       opening_hours,
       ...(phone.trim() ? { phone: phone.trim() } : {}),
+      ...(!isNaN(lat) ? { latitude: lat } : {}),
+      ...(!isNaN(lon) ? { longitude: lon } : {}),
     } as any);
 
     setSaving(false);
     Alert.alert('Salvo!', 'Estabelecimento atualizado com sucesso.');
+  };
+
+  const handleUseLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') { Alert.alert('Permissão negada', 'Habilite a localização nas configurações.'); return; }
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      setLatitude(loc.coords.latitude.toFixed(6));
+      setLongitude(loc.coords.longitude.toFixed(6));
+    } catch {
+      Alert.alert('Erro', 'Não foi possível obter a localização.');
+    }
   };
 
   const Field = ({
@@ -138,6 +160,50 @@ export default function ParceiroEstabelecimentoScreen() {
           <Field label="Descrição" value={description} onChange={setDescription} placeholder="Descreva seu estabelecimento..." multiline icon={Building2} />
           <Field label="Endereço" value={address} onChange={setAddress} placeholder="Rua das Flores, 123 — Jardins" icon={MapPin} />
           <Field label="Telefone" value={phone} onChange={setPhone} placeholder="(11) 99999-9999" keyboardType="phone-pad" icon={Phone} />
+
+          {/* Coordenadas */}
+          <View style={{ marginBottom: 18 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '600' }}>Localização no mapa</Text>
+              <TouchableOpacity
+                onPress={handleUseLocation}
+                style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 5,
+                  backgroundColor: 'rgba(26,122,200,0.15)', borderRadius: 100,
+                  paddingHorizontal: 12, paddingVertical: 6,
+                  borderWidth: 1, borderColor: 'rgba(26,122,200,0.3)',
+                }}
+              >
+                <Locate size={13} color={COLORS.chuva} strokeWidth={2} />
+                <Text style={{ color: COLORS.chuva, fontSize: 12, fontWeight: '700' }}>Usar GPS</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {[
+                { label: 'Latitude', value: latitude, set: setLatitude, placeholder: '-23.550520' },
+                { label: 'Longitude', value: longitude, set: setLongitude, placeholder: '-46.633308' },
+              ].map(({ label, value, set, placeholder }) => (
+                <View key={label} style={{ flex: 1 }}>
+                  <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginBottom: 6 }}>{label}</Text>
+                  <TextInput
+                    value={value}
+                    onChangeText={set}
+                    placeholder={placeholder}
+                    placeholderTextColor="rgba(255,255,255,0.2)"
+                    keyboardType="decimal-pad"
+                    style={{
+                      backgroundColor: COLORS.surface, borderRadius: 12,
+                      borderWidth: 1, borderColor: COLORS.border,
+                      color: COLORS.white, fontSize: 13, padding: 12, textAlign: 'center',
+                    }}
+                  />
+                </View>
+              ))}
+            </View>
+            <Text style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, marginTop: 6 }}>
+              Necessário para aparecer no mapa e calcular distâncias
+            </Text>
+          </View>
 
           {/* Serviço móvel */}
           <View style={{ height: 1, backgroundColor: COLORS.border, marginVertical: 20 }} />

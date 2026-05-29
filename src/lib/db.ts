@@ -1,6 +1,6 @@
 import {
   collection, doc, getDoc, getDocs, addDoc, deleteDoc, updateDoc,
-  query, where, orderBy, limit,
+  query, where, orderBy, limit, increment,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Vehicle, Establishment, Service, Booking, Review, BookingStatus, User, Product } from '../types';
@@ -154,6 +154,23 @@ export async function createReview(data: Omit<Review, 'id'>): Promise<Review> {
 
 export async function updateUser(userId: string, data: Partial<Omit<User, 'id'>>): Promise<void> {
   await updateDoc(doc(db, 'users', userId), data as Record<string, unknown>);
+}
+
+export async function incrementLoyaltyStamps(userId: string, amount: number): Promise<void> {
+  await updateDoc(doc(db, 'users', userId), { loyalty_stamps: increment(amount) });
+}
+
+// ── Availability ──────────────────────────────────────────────────────────────
+
+export async function fetchBookedTimes(establishmentId: string, date: string): Promise<string[]> {
+  const q = query(
+    collection(db, 'bookings'),
+    where('establishment_id', '==', establishmentId),
+    where('date', '==', date),
+    where('status', 'in', ['aguardando_confirmacao', 'confirmado', 'em_andamento']),
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => d.data().time as string);
 }
 
 // ── Products ──────────────────────────────────────────────────────────────────
