@@ -4,7 +4,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { COLORS } from '../src/lib/constants';
 
 export default function Index() {
-  const { firebaseUser, loading } = useAuthStore();
+  const { firebaseUser, user, loading } = useAuthStore();
 
   if (loading) {
     return (
@@ -14,5 +14,7 @@ export default function Index() {
     );
   }
 
-  return <Redirect href={firebaseUser ? '/(tabs)' : '/(auth)/onboarding'} />;
+  if (!firebaseUser) return <Redirect href="/(auth)/onboarding" />;
+  if (user?.role === 'parceiro') return <Redirect href="/parceiro/(dashboard)" />;
+  return <Redirect href="/(tabs)" />;
 }

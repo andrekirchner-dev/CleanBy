@@ -21,6 +21,7 @@ interface AuthState {
   googleLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error?: string }>;
+  signUpPartner: (email: string, password: string, name: string, phone: string) => Promise<{ error?: string }>;
   signInWithGoogle: () => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   setFirebaseUser: (fbUser: FirebaseUser | null) => void;
@@ -124,6 +125,32 @@ export const useAuthStore = create<AuthState>((set) => ({
         avatar_url: null,
         plan: 'free',
         role: 'cliente',
+        pro_pay_on_site_quota: 0,
+        loyalty_stamps: 0,
+        created_at: new Date().toISOString(),
+      });
+      return {};
+    } catch (e: any) {
+      const msg: Record<string, string> = {
+        'auth/email-already-in-use': 'Este e-mail já está em uso',
+        'auth/weak-password': 'Senha fraca. Use pelo menos 6 caracteres.',
+        'auth/invalid-email': 'E-mail inválido',
+      };
+      return { error: msg[e.code] ?? 'Erro ao criar conta. Tente novamente.' };
+    }
+  },
+
+  signUpPartner: async (email, password, name, phone) => {
+    try {
+      const { user: fbUser } = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(fbUser, { displayName: name });
+      await setDoc(doc(db, 'users', fbUser.uid), {
+        name,
+        email,
+        phone,
+        avatar_url: null,
+        plan: 'free',
+        role: 'parceiro',
         pro_pay_on_site_quota: 0,
         loyalty_stamps: 0,
         created_at: new Date().toISOString(),

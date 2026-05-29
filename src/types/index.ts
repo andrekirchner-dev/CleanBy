@@ -42,6 +42,7 @@ export interface Vehicle {
 
 export interface Establishment {
   id: string;
+  partner_id?: string;
   name: string;
   slug: string;
   description?: string;
@@ -50,6 +51,7 @@ export interface Establishment {
   rating: number;
   review_count: number;
   address: string;
+  city?: string;
   latitude: number;
   longitude: number;
   distance_km?: number;
